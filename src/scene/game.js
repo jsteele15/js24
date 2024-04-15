@@ -43,13 +43,26 @@ const zombie_run = function(target, zombies, speed){
     }
 }
 
+const followPath = function(hero, target){
+    if(hero.x < target[0]){
+        hero.x += 2
+    }
+}
+
+const fireProjectile = function(bl, x, y){
+    const bullet = bl.create(x, y, 'block')
+    bullet.setVelocityY(+200)
+}
+
 export default class Game extends Phaser.Scene{
     constructor()
     {
         super('game')
         this.hero_1 = null
         this.base_zombie = null
+        this.bl = null
         this.alive = true
+        this.fired = false
     }
 
     preload()
@@ -57,44 +70,55 @@ export default class Game extends Phaser.Scene{
         this.load.image('base_zombie', '../res/test.jpg')
         this.load.image('hero_1', '../res/hero.png')
         this.load.image('block', '../res/hit.png')
+        //test for the fast zombie
+        //this.load.image('fast_z', '../res/fast_zombie.png')
     }
 
     create()
     {
         this.base_zombie = this.physics.add.group()
         this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
-        const bl = this.physics.add.sprite(80, 80, 'block')
+        //this.bl = this.physics.add.sprite(80, 80, 'block')
+        this.bl = this.physics.add.group()
+
+        //test for the zombie
+        //const fast_zombie = this.physics.add.sprite(200, 64, 'fast_z')
 
         create_h(this.base_zombie, 'base_zombie', 0.1, 1, 150, 400)
         //create_h(hero_1, 'hero_1', 1, 1)
 
-        //here if the zombies hit the player the player dies straight away, will need to change later to reduce health
+        //here if the zombies hit the player the player dies straight away, will need to change later to reduce healthpulapulapula
         this.physics.add.collider(this.base_zombie, this.hero_1, () => {
             console.log("eaten")
             this.alive = false
             this.hero_1.destroy()
         })
 
-        this.physics.add.overlap(bl, this.base_zombie, zombie_hit, null, this);
+        this.physics.add.overlap(this.bl, this.base_zombie, zombie_hit, null, this);
         //camera currently follows the player
         //this.cameras.main.startFollow(this.hero_1)
         this.input.on('pointerdown', this.handleLeftClick, this);
-        
+
+        //timer for the weapons
+        const timer = this.time.addEvent({
+            delay: 500,
+            callback: this.fireWeapon,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     update()
     {
         if(this.alive === true){
-            this.hero_1.setVelocityX(+20)
+            followPath(this.hero_1, [500, 200])
         }
         
         //console.log(this.hero_1.x)
         zombie_run(this.hero_1, this.base_zombie, 2)
         //this.base_zombie.setVelocityX(+20)
-
-        
-
     }
+    
     ///for handeling the left clicks, it will need to drop a zombie
     handleLeftClick(pointer) {
         if (pointer.leftButtonDown()) {
@@ -103,5 +127,11 @@ export default class Game extends Phaser.Scene{
             // Add any other logic you need here
         }
     }
-}
 
+    ///firing the heros weapon
+    fireWeapon(){
+        if(this.alive === true){
+            fireProjectile(this.bl, this.hero_1.x, this.hero_1.y)
+        }
+    }
+}
