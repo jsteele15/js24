@@ -15,6 +15,7 @@ const create_h = function(zombie, z_string, s, n, x, y){
 //kills the zombies if it hits an object
 const zombie_hit = function(col, zomb){
     zomb.disableBody(true, true);
+    col.disableBody(true, true);
 }
 
 //this is needed to work out where the zombies have to go
@@ -49,9 +50,21 @@ const followPath = function(hero, target){
     }
 }
 
-const fireProjectile = function(bl, x, y){
-    const bullet = bl.create(x, y, 'block')
-    bullet.setVelocityY(+200)
+const fireProjectile = function(bl, x, y, type){
+    //you can change the type of fire rate by changing the type
+    const thresholdY = 300;
+    if(type === "random"){
+        const choices = [200, -200, 100, -100]
+        const bullet = bl.create(x, y, 'block')
+        bullet.setVelocityY(Phaser.Math.RND.pick(choices))
+        bullet.setVelocityX(Phaser.Math.RND.pick(choices))
+
+        //this doesnt work, im too tired to get it working
+        if(bl.y > thresholdY){
+            bl.disableBody(true, true);
+            console.log("hfrheui")
+        }
+    }
 }
 
 export default class Game extends Phaser.Scene{
@@ -101,7 +114,7 @@ export default class Game extends Phaser.Scene{
 
         //timer for the weapons
         const timer = this.time.addEvent({
-            delay: 500,
+            delay: 100,
             callback: this.fireWeapon,
             callbackScope: this,
             loop: true
@@ -117,8 +130,10 @@ export default class Game extends Phaser.Scene{
         //console.log(this.hero_1.x)
         zombie_run(this.hero_1, this.base_zombie, 2)
         //this.base_zombie.setVelocityX(+20)
+
+        
     }
-    
+
     ///for handeling the left clicks, it will need to drop a zombie
     handleLeftClick(pointer) {
         if (pointer.leftButtonDown()) {
@@ -131,7 +146,7 @@ export default class Game extends Phaser.Scene{
     ///firing the heros weapon
     fireWeapon(){
         if(this.alive === true){
-            fireProjectile(this.bl, this.hero_1.x, this.hero_1.y)
+            fireProjectile(this.bl, this.hero_1.x, this.hero_1.y, "random")
         }
     }
 }
