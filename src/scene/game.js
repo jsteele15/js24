@@ -76,6 +76,7 @@ export default class Game extends Phaser.Scene{
         this.bl = null
         this.alive = true
         this.fired = false
+        this.emitter = null
         //current selected will include the curent zombie, and then the 'string name'
         this.current_selected = [null, null]
     }
@@ -97,20 +98,17 @@ export default class Game extends Phaser.Scene{
         //this.bl = this.physics.add.sprite(80, 80, 'block')
         this.bl = this.physics.add.group()
         
-        let particles = this.add.particles('parts')
-
-        let emitter = particles.createEmitter({
-            x: 500,
-            y:500,
-            lifespan: {min: 8000, max: 10000},
-            frequency: 10,
-            speed: 100, 
-            scale: { start: 100, end: 100},
-            blendMode: 'NORMAL'
+        //let particles = this.add.particles('parts')
+        //let particles = this.add.particles('parts')
+        
+        //this is for creating particle, it cannot be used to directly interact with game objects, but i could use them to make the game more juicy
+        this.emitter = this.add.particles(199, 300, 'parts', {
+            angle: {min: -30, max: 30},
+            speed:150
         });
 
-        emitter.setPosition(100, 100);
-        emitter.setFrequency(1000, 200);
+        this.emitter.setPosition(100, 100);
+        this.emitter.setFrequency(1000, 200);
         //test for the zombie
         //const fast_zombie = this.physics.add.sprite(200, 64, 'fast_z')
 
@@ -119,12 +117,12 @@ export default class Game extends Phaser.Scene{
 
         //here if the zombies hit the player the player dies straight away, will need to change later to reduce healthpulapulapula
         this.physics.add.collider(this.base_zombie, this.hero_1, () => {
-            console.log("eaten")
+            //console.log("eaten")
             this.alive = false
             this.hero_1.destroy()
         })
-
-        this.physics.add.overlap(this.bl, this.base_zombie, zombie_hit, null, this);
+        
+        this.physics.add.collider(this.bl, this.base_zombie, zombie_hit, null, this);
         //camera currently follows the player
         //this.cameras.main.startFollow(this.hero_1)
         this.input.on('pointerdown', this.handleLeftClick, this);
@@ -135,7 +133,12 @@ export default class Game extends Phaser.Scene{
             callback: this.fireWeapon,
             callbackScope: this,
             loop: true
+
+
+        
         });
+
+        
     }
 
     update()
@@ -148,7 +151,21 @@ export default class Game extends Phaser.Scene{
         zombie_run(this.hero_1, this.base_zombie, 2)
         //this.base_zombie.setVelocityX(+20)
 
-        console.log("sabdguevyue")
+        //this works out where the bullets are in relation to the hero, if it ever leaves the square around the hero itll stop the bullet
+        //this enables the screen not to get clogged up with stuff
+        //probably better off moving this too a function but will keep this for now and move it on saturday
+        for(let i = 0; i < this.bl.children.entries.length; i++){
+            if(this.bl.children.entries[i].x < this.hero_1.x+200 && this.bl.children.entries[i].x > this.hero_1.x-200 && this.bl.children.entries[i].y < this.hero_1.y+200 && this.bl.children.entries[i].y > this.hero_1.y-200){
+                
+            } else {
+                this.bl.children.entries[i].disableBody(true, true);
+            }
+        }
+        //console.log(this.bl.children.entries)
+        if(this.bl.x > 200){
+            this.bl.disableBody(true, true)
+        }
+        
     }
 
     ///for handeling the left clicks, it will need to drop a zombie
