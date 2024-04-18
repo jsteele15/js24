@@ -76,6 +76,8 @@ export default class Game extends Phaser.Scene{
         this.bl = null
         this.alive = true
         this.fired = false
+        //current selected will include the curent zombie, and then the 'string name'
+        this.current_selected = [null, null]
     }
 
     preload()
@@ -83,6 +85,7 @@ export default class Game extends Phaser.Scene{
         this.load.image('base_zombie', '../res/test.jpg')
         this.load.image('hero_1', '../res/hero.png')
         this.load.image('block', '../res/hit.png')
+        this.load.image('parts', '../res/hit.png')
         //test for the fast zombie
         //this.load.image('fast_z', '../res/fast_zombie.png')
     }
@@ -93,7 +96,21 @@ export default class Game extends Phaser.Scene{
         this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
         //this.bl = this.physics.add.sprite(80, 80, 'block')
         this.bl = this.physics.add.group()
+        
+        let particles = this.add.particles('parts')
 
+        let emitter = particles.createEmitter({
+            x: 500,
+            y:500,
+            lifespan: {min: 8000, max: 10000},
+            frequency: 10,
+            speed: 100, 
+            scale: { start: 100, end: 100},
+            blendMode: 'NORMAL'
+        });
+
+        emitter.setPosition(100, 100);
+        emitter.setFrequency(1000, 200);
         //test for the zombie
         //const fast_zombie = this.physics.add.sprite(200, 64, 'fast_z')
 
@@ -131,7 +148,7 @@ export default class Game extends Phaser.Scene{
         zombie_run(this.hero_1, this.base_zombie, 2)
         //this.base_zombie.setVelocityX(+20)
 
-        
+        console.log("sabdguevyue")
     }
 
     ///for handeling the left clicks, it will need to drop a zombie
