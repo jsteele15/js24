@@ -26,8 +26,6 @@ const zombie_hit = function(col, zomb){
 }
 
 
-
-
 ///work on movement ai for the hero
 const followPath = function(hero, s_ind ,target, speed){
     if(hero.x < target[s_ind][0]){
@@ -171,7 +169,7 @@ export default class Game extends Phaser.Scene{
             loop: true, // Repeat indefinitely
         });
         this.healthBar = this.makeBar(this.hero_1.x, this.hero_1.y, 0x2ecc71);
-        this.upB = this.physics.add.sprite(200, 200, 'upBack')
+        this.upB = this.physics.add.sprite(300, 300, 'upBack')
     }
 
     update()
@@ -251,7 +249,7 @@ export default class Game extends Phaser.Scene{
         }
         if(state === 'Upgrade'){
             if(this.up_fired === false){
-                this.upB = this.physics.add.sprite(200, 200, 'upBack')
+                this.upB = this.physics.add.sprite(300, 300, 'upBack')
                 this.upB.visible = true
                 level_num += 1
                 //this.hero_1 = null
@@ -356,11 +354,13 @@ export default class Game extends Phaser.Scene{
     }
 
     updateClock(){
-        if(timeSeconds+1 === 60){
-            timeMinutes += 1
-            timeSeconds = 0
-        } else {
-            timeSeconds += 1
+        if(state === 'Battle'){
+            if(timeSeconds+1 === 60){
+                timeMinutes += 1
+                timeSeconds = 0
+            } else {
+                timeSeconds += 1
+            }
         }
         //console.log(timeMinutes, ":", timeSeconds)
     }
