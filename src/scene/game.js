@@ -308,57 +308,57 @@ export default class Game extends Phaser.Scene{
     {
         //this.load.image('base_zombie', '../res/test.jpg')
         //for the heros
-        this.load.image('hero_1', '../res/hero.png')
-        this.load.image('test_hero', '../res/test_hero.png')
-        this.load.image('hero_3', '../res/hero_3.png')
+        this.load.image('hero_1', './res/hero.png')
+        this.load.image('test_hero', './res/test_hero.png')
+        this.load.image('hero_3', './res/hero_3.png')
 
         //the sprites for the amunition
-        this.load.image('block', '../res/hit.png')
-        this.load.image('dino', '../res/dino.png')
-        this.load.image('sword', '../res/light_sword.png')
-        this.load.image('bullet', '../res/bullet.png')
+        this.load.image('block', './res/hit.png')
+        this.load.image('dino', './res/dino.png')
+        this.load.image('sword', './res/light_sword.png')
+        this.load.image('bullet', './res/bullet.png')
 
-        this.load.image('upBack', '../res/upgrade_back.png')
+        this.load.image('upBack', './res/upgrade_back.png')
 
         //the sprite sheets for buttons
-        this.load.spritesheet('buttons', '../res/temp_buts.png',{
+        this.load.spritesheet('buttons', './res/temp_buts.png',{
             frameWidth: 50,
             frameHeight: 50
         })
 
 
         //the spritesheets for the zombies
-        this.load.spritesheet('base_zombie', '../res/Zombie 1 - basic walk.png', {
+        this.load.spritesheet('base_zombie', './res/Zombie 1 - basic walk.png', {
             frameWidth: 64,
             frameHeight: 64
         })
 
-        this.load.spritesheet('ghost', '../res/Ghost zombie.png', {
+        this.load.spritesheet('ghost', './res/Ghost zombie.png', {
             frameWidth: 64,
             frameHeight: 64
         })
         
-        this.load.spritesheet('fast', '../res/Fast zombie 2.png', {
+        this.load.spritesheet('fast', './res/Fast zombie 2.png', {
             frameWidth: 64,
             frameHeight: 64
         })
 
-        this.load.spritesheet('sheild', '../res/Zombie shield.png', {
+        this.load.spritesheet('sheild', './res/Zombie shield.png', {
             frameWidth: 64,
             frameHeight: 64
         })
 
-        this.load.spritesheet('bomb', '../res/bomb zombie.png', {
+        this.load.spritesheet('bomb', './res/bomb zombie.png', {
             frameWidth: 64,
             frameHeight: 64
         })
 
-        this.load.spritesheet('spitter', '../res/spitter.png', {
+        this.load.spritesheet('spitter', './res/spitter.png', {
             frameWidth: 64,
             frameHeight: 64
         })
 
-        this.load.spritesheet('one_tough', '../res/otz.png', {
+        this.load.spritesheet('one_tough', './res/otz.png', {
             frameWidth: 64,
             frameHeight: 64
         })
