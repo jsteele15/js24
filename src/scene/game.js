@@ -487,7 +487,12 @@ export default class Game extends Phaser.Scene{
 
     update()
     {
-        
+        if(state === 'Main_menu'){
+            console.log("main menu")
+        }
+        if(state === 'Cutscene'){
+            console.log("cut scene")
+        }
         if(state === 'Battle'){
             if(this.bat_fired === false){
                 
