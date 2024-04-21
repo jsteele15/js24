@@ -2,6 +2,8 @@ import Phaser from '../lib/phaser.js'
 
 ///vars that need to be used across the file
 let saved_movement_ind = 1
+let path = null
+let pat = null
 let cur_h_health = 100
 let zombies_lost = 0
 let timeMinutes = 0
@@ -28,7 +30,8 @@ const zombie_hit = function(col, zomb){
 
 
 ///work on movement ai for the hero
-const followPath = function(hero, s_ind ,target, speed){
+const followPath = function(hero, s_ind ,target, speed, pattern){
+    
     if(hero.x < target[s_ind][0]){
         hero.x += speed
     }
@@ -41,10 +44,36 @@ const followPath = function(hero, s_ind ,target, speed){
     if(hero.y > target[s_ind][1]){
         hero.y -= speed
     }
-    if(hero.x === target[s_ind][0] && hero.y === target[s_ind][1]){
-        saved_movement_ind = Phaser.Math.Between(0, target.length-1)
+    
+    if(pattern === 'rand'){
+        
+        if(hero.x === target[s_ind][0] && hero.y === target[s_ind][1]){
+            saved_movement_ind = Phaser.Math.Between(0, target.length-1)
+        }
     }
+    if(pattern === 'top'){
 
+        if(hero.x === target[s_ind][0] && hero.y === target[s_ind][1]){
+            if(s_ind === 0){
+                saved_movement_ind = 1
+            } else {
+                saved_movement_ind = 0
+            }
+            
+        }
+    }
+    if(pattern === 'perimiter'){
+        if(hero.x === target[s_ind][0] && hero.y === target[s_ind][1]){
+            if(s_ind < 3){
+                saved_movement_ind += 1
+            } else {
+                saved_movement_ind = 0
+            }
+
+    }}
+    if(pattern === 'center'){
+
+    }
 }
 
 const fireProjectile = function(bl, x, y, type){
@@ -113,15 +142,22 @@ export default class Game extends Phaser.Scene{
         this.load.image('test_hero', '../res/test_hero.png')
         this.load.image('hero_3', '../res/hero_3.png')
 
+        //the sprites for the amunition
         this.load.image('block', '../res/hit.png')
-        this.load.image('parts', '../res/hit.png')
+        this.load.image('dino', '../res/dino.png')
+        this.load.image('sword', '../res/light_sword.png')
+        this.load.image('bullet', '../res/bullet.png')
+
         this.load.image('upBack', '../res/upgrade_back.png')
 
+        //the sprite sheets for buttons
         this.load.spritesheet('buttons', '../res/temp_buts.png',{
             frameWidth: 50,
             frameHeight: 50
         })
 
+
+        //the spritesheets for the zombies
         this.load.spritesheet('base_zombie', '../res/Zombie 1 - basic walk.png', {
             frameWidth: 64,
             frameHeight: 64
@@ -202,9 +238,9 @@ export default class Game extends Phaser.Scene{
         this.button_actions(this.gh, [this.ghost_zombie, 'ghost', 'bounce', 4])
         this.button_actions(this.fa, [this.fast_zombie, 'fast', 'sprint', 3])
         this.button_actions(this.sh, [this.sheild_zombie, 'sheild', 'hold', 2])
-        this.button_actions(this.bo, [this.bomb_zombie, 'bomb', 'boom', 0])
-        this.button_actions(this.sp, [this.spit_zombie, 'spitter', 'spit', 0])
-        this.button_actions(this.ont, [this.one_tough_zombie, 'one_tough', 'stars', 0])
+        this.button_actions(this.bo, [this.bomb_zombie, 'bomb', 'boom', 1])
+        this.button_actions(this.sp, [this.spit_zombie, 'spitter', 'spit', 1])
+        this.button_actions(this.ont, [this.one_tough_zombie, 'one_tough', 'stars', 1])
         //particles, dont need just yet
         //let particles = this.add.particles('parts')
         //let particles = this.add.particles('parts')
@@ -269,19 +305,35 @@ export default class Game extends Phaser.Scene{
                 if(level_num === 1){
                     //this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
                     this.change_butt_pos()
+                    saved_movement_ind = 0
+                    path = [[100, 100],[500, 200], [600, 600], [100, 600], [300, 300]]
+                    pat = 'rand'
                 }
                 if(level_num === 2){
-                    this.hero_1 = this.physics.add.sprite(10, 10, 'test_hero')
+                    this.hero_1 = this.physics.add.sprite(30, 30, 'test_hero')
                     this.change_butt_pos()
-                    
+                    saved_movement_ind = 0
+                    path = [[30, 70], [620, 70]]
+                    pat = 'top'
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
                 if(level_num === 3){
-                    this.hero_1 = this.physics.add.sprite(100, 100, 'hero_3')
+                    this.hero_1 = this.physics.add.sprite(600, 600, 'hero_3')
                     this.change_butt_pos()
-                    
+                    saved_movement_ind = 0
+                    path = [[520, 520], [520, 70], [70, 70], [70, 520]]
+                    pat = 'perimiter'
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
+                if(level_num === 4){
+                    this.hero_1 = this.physics.add.sprite(300, 300, 'hero_3')
+                    this.change_butt_pos()
+                    saved_movement_ind = 0
+                    path = [[300, 300]]
+                    pat = 'center'
+                    this.add_collision(this.zombie_list, this.hero_1)
+                }
+
                 this.upB.visible = false
                 this.alive = true
                 cur_h_health = 100
@@ -293,7 +345,7 @@ export default class Game extends Phaser.Scene{
             }
 
             if(this.alive === true){
-                followPath(this.hero_1, saved_movement_ind, [[100, 100],[500, 200], [600, 600], [100, 600], [300, 300]], 2)
+                followPath(this.hero_1, saved_movement_ind, path, 2, pat)
             }
 
             //this sets the current time in the run
@@ -335,11 +387,23 @@ export default class Game extends Phaser.Scene{
         }
         if(state === 'Upgrade'){
             if(this.up_fired === false){
-               
-                if(level_num < 3){
+                if(level_num >= 4){
                     this.upB = this.physics.add.sprite(300, 200, 'upBack')
                     this.upB.visible = true
-                    
+                    upgradeText = this.add.text(200, 200, 'testing', {
+                        fontFamily: 'Arial',
+                        fontSize: '24px',
+                        color: '#ffffff',
+                    })
+                    upgradeText.setOrigin(0.5);
+                    upgradeText.setText('You won')
+
+                    this.up_fired = true
+                }
+                if(level_num < 4){
+                    this.upB = this.physics.add.sprite(300, 200, 'upBack')
+                    this.upB.visible = true
+
                     for(let i = 0; i < this.button_list.length; i++){
                         this.button_list[i].visible = false
                     }
@@ -371,19 +435,7 @@ export default class Game extends Phaser.Scene{
                     }}
                     this.up_fired = true
                 }
-                if(level_num >= 3){
-                    this.upB = this.physics.add.sprite(300, 200, 'upBack')
-                    this.upB.visible = true
-                    upgradeText = this.add.text(200, 200, 'testing', {
-                        fontFamily: 'Arial',
-                        fontSize: '24px',
-                        color: '#ffffff',
-                    })
-                    upgradeText.setOrigin(0.5);
-                    upgradeText.setText('You won')
-
-                    this.up_fired = true
-                }
+                
                 }
             
 
@@ -545,12 +597,10 @@ export default class Game extends Phaser.Scene{
 
         button.on('pointerover', ()=> {
             this.over_button = true
-            console.log("over")
         })
 
         button.on('pointerout', ()=>{
             this.over_button = false
-            console.log("out")
         })
     }
 
