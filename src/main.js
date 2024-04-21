@@ -19,5 +19,3 @@ export default new Phaser.Game({
 })
 
 console.dir(Phaser)
-
-console.log("working")
