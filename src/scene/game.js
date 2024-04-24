@@ -1,4 +1,6 @@
 import Phaser from '../lib/phaser.js'
+import {Cut_scene, Main_menu} from '/scene/cutscene.js'
+
 
 ///vars that need to be used across the file
 let saved_movement_ind = 1
@@ -15,7 +17,7 @@ let hero_speed = 2
 let base_speed = 1
 
 //state machine for inside the class, im thinking, Menu, Upgrade, Battle
-let state = 'Battle'
+let state = 'Main_menu'
 
 //attack for the zombies
 const attack_hero = function(hero, z_list){
@@ -274,7 +276,12 @@ export default class Game extends Phaser.Scene{
         this.hero_list = [this.hero_1, null, null, null, null, null, null, null, null]
         this.healthBar = null
         this.tiles = null
+        
+        this.title = null
+        this.start = null
+        this.building = null
 
+        this.main_menu_zombies = null
         this.base_zombie = null
         this.ghost_zombie = null
         this.fast_zombie = null
@@ -313,7 +320,11 @@ export default class Game extends Phaser.Scene{
     }
 
     preload()
-    {
+    {   
+        //start
+        this.load.image('start_but', './res/start.png')
+        this.load.image('title_card', './res/title.png')
+        this.load.image('build', './res/Overlay - abdoned house.png')
         //TILES
         this.load.image('tile1', './res/Background tile 1.png')
         this.load.image('tile2', './res/Background tile 2.png')
@@ -383,6 +394,9 @@ export default class Game extends Phaser.Scene{
 
     create()
     {   
+        //main_menu
+        
+
         //tiles
         this.tiles = this.physics.add.group()
         let tile_list = ['tile1', 'tile2', 'tile3', 'tile4', 'tile5']
@@ -393,7 +407,7 @@ export default class Game extends Phaser.Scene{
                 //tile1.setScale(10)
             }
         }
-
+        
         this.upB = this.physics.add.sprite(300, 300, 'upBack')
 
         //amunition objects
@@ -402,9 +416,23 @@ export default class Game extends Phaser.Scene{
         this.sw = this.physics.add.group()
         this.bu = this.physics.add.group()
         //heros
-        this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
+        this.hero_1 = this.physics.add.sprite(350, -4000, 'hero_1')
 
         //zombies
+        this.main_menu_zombies = this.physics.add.group()
+        let list_zombies = ['base_zombie', 'ghost', 'fast', 'fast', 'sheild', 'bomb', 'spitter', 'one_tough']
+        this.building = this.physics.add.sprite(320, 500, 'build')
+        for(let i = 0; i < 20; i++){
+            for(let c = 0; c < 24; c++){
+                const randomInt = Math.floor(Math.random() * 8)
+                this.main_menu_zombies.create(35*i, 800+(30*c), list_zombies[randomInt])
+            }
+        }
+        this.start = this.physics.add.sprite(320, -20, 'start_but')
+        this.title = this.physics.add.sprite(320, -200, 'title_card')
+        
+        this.button_actions(this.start, [], [])
+
         this.base_zombie = this.physics.add.group()
         this.ghost_zombie = this.physics.add.group()
         this.fast_zombie = this.physics.add.group()
@@ -429,6 +457,9 @@ export default class Game extends Phaser.Scene{
         this.gh.visible = false
         this.fa.visible = false
         this.sh.visible = false
+        this.ont.visible = false
+        this.sp.visible = false
+        this.bo.visible = false
 
         this.left_list = [this.gh, this.fa, this.sp]
         this.right_list = [this.bo, this.sh, this.ont]
@@ -496,8 +527,8 @@ export default class Game extends Phaser.Scene{
 
         //to count how long it takes to defeat the heros
         timerText = this.add.text(320, 30, 'testing', {
-            fontFamily: 'Arial',
-            fontSize: '24px',
+            fontFamily: 'Stencil Std, fantasy',
+            fontSize: '40px',
             color: '#ffffff',
         })
         timerText.setOrigin(0.5);
@@ -516,7 +547,18 @@ export default class Game extends Phaser.Scene{
     {   
         
         if(state === 'Main_menu'){
-            console.log("main menu")
+            this.upB.visible = false
+            timerText.visible = false
+           
+            for(let i = 0; i < this.main_menu_zombies.children.entries.length; i++){
+                this.main_menu_zombies.children.entries[i].setVelocity(0, -200)
+                
+                if(this.main_menu_zombies.children.entries[i].y < -40){
+                    this.main_menu_zombies.children.entries[i].y += 700
+                }
+                //zombies.children.entries[i].setVelocity(deltaX *= speed, deltaY*= speed);
+            }
+            Main_menu(this.button_list, this.start, this.title, this.building)
         }
         if(state === 'Cutscene'){
             console.log("cut scene")
@@ -525,7 +567,7 @@ export default class Game extends Phaser.Scene{
             if(this.bat_fired === false){
                 
                 if(level_num === 1){
-
+                    this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
                     this.timer.delay = 200
                     //this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
                     this.change_butt_pos()
@@ -646,8 +688,8 @@ export default class Game extends Phaser.Scene{
                     this.upB = this.physics.add.sprite(300, 200, 'upBack')
                     this.upB.visible = true
                     upgradeText = this.add.text(200, 200, 'testing', {
-                        fontFamily: 'Arial',
-                        fontSize: '24px',
+                        fontFamily: 'Stencil Std, fantasy',
+                        fontSize: '40px',
                         color: '#ffffff',
                     })
                     upgradeText.setOrigin(0.5);
@@ -661,6 +703,7 @@ export default class Game extends Phaser.Scene{
 
                     for(let i = 0; i < this.button_list.length; i++){
                         this.button_list[i].visible = false
+                        
                     }
 
                     this.left_list[level_num-1].visible = true
@@ -670,8 +713,8 @@ export default class Game extends Phaser.Scene{
 
                     
                     upgradeText = this.add.text(200, 200, 'testing', {
-                        fontFamily: 'Arial',
-                        fontSize: '24px',
+                        fontFamily: 'Stencil Std, fantasy',
+                        fontSize: '40px',
                         color: '#ffffff',
                     })
                     upgradeText.setOrigin(0.5);
@@ -700,8 +743,8 @@ export default class Game extends Phaser.Scene{
                 this.upB = this.physics.add.sprite(300, 200, 'upBack')
                 this.upB.visible = true
                 loseText = this.add.text(200, 200, 'testing', {
-                    fontFamily: 'Arial',
-                    fontSize: '24px',
+                    fontFamily: 'Stencil Std, fantasy',
+                    fontSize: '40px',
                     color: '#ffffff',
                 })
                 loseText.setOrigin(0.5);
@@ -833,6 +876,9 @@ export default class Game extends Phaser.Scene{
     button_actions(button, s_list, f_list){
         button.setInteractive()
         button.on('pointerdown', ()=> {
+            if(state === 'Main_menu'){
+                state = 'Cutscene'
+            }
             if(state === 'Battle'){
                 this.current_selected = s_list
             }    
@@ -844,13 +890,16 @@ export default class Game extends Phaser.Scene{
         })
 
         button.on('pointerover', ()=> {
-            this.over_button = true
-            button.setFrame(f_list[1])
+            if(state === 'Battle'){
+                this.over_button = true
+                button.setFrame(f_list[1])
+            }
         })
 
         button.on('pointerout', ()=>{
-            this.over_button = false
-            button.setFrame(f_list[0])
+            if(state === "Battle"){
+                this.over_button = false
+                button.setFrame(f_list[0])}
         })
     }
 
