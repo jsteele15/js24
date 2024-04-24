@@ -20,5 +20,5 @@ export const Main_menu = function( button_list, start, title, building){
 }
 
 export const Cut_scene = function(){
-    console.log("cutscene")
+    
 }

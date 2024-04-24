@@ -281,6 +281,14 @@ export default class Game extends Phaser.Scene{
         this.start = null
         this.building = null
 
+        this.jaw = null
+        this.skull = null
+        this.inside = null
+        this.eyes = null
+        this.behind = null
+        this.skull_parts = null
+        this.movement_eyes = 'right'
+
         this.main_menu_zombies = null
         this.base_zombie = null
         this.ghost_zombie = null
@@ -325,6 +333,15 @@ export default class Game extends Phaser.Scene{
         this.load.image('start_but', './res/start.png')
         this.load.image('title_card', './res/title.png')
         this.load.image('build', './res/Overlay - abdoned house.png')
+
+        //cutscene
+        this.load.image('jaw', './res/jaw.png')
+        this.load.image('skull', './res/skull.png')
+        this.load.image('inside', './res/inside.png')
+        this.load.image('eyes', './res/eyes.png')
+        this.load.image('behind', './res/behind_skull.png')
+        this.load.image('text_scroll', './res/text_scroll.png')
+
         //TILES
         this.load.image('tile1', './res/Background tile 1.png')
         this.load.image('tile2', './res/Background tile 2.png')
@@ -418,7 +435,7 @@ export default class Game extends Phaser.Scene{
         //heros
         this.hero_1 = this.physics.add.sprite(350, -4000, 'hero_1')
 
-        //zombies
+        //main_ menu
         this.main_menu_zombies = this.physics.add.group()
         let list_zombies = ['base_zombie', 'ghost', 'fast', 'fast', 'sheild', 'bomb', 'spitter', 'one_tough']
         this.building = this.physics.add.sprite(320, 500, 'build')
@@ -432,7 +449,19 @@ export default class Game extends Phaser.Scene{
         this.title = this.physics.add.sprite(320, -200, 'title_card')
         
         this.button_actions(this.start, [], [])
+        
+        //cut scene
+        this.behind = this.physics.add.sprite(220, -100, 'behind')
+        this.eyes = this.physics.add.sprite(220, -100, 'eyes')
+        this.inside = this.physics.add.sprite(220, -100, 'inside')
+        this.skull = this.physics.add.sprite(220, -100, 'skull')
+        this.jaw = this.physics.add.sprite(220, -100, 'jaw')
+        this.skull_parts = [this.behind, this.eyes, this.inside, this.skull, this.jaw]
+        this.text_scroll = this.physics.add.sprite(450, 300, 'text_scroll')
+        
+        
 
+        //zombies
         this.base_zombie = this.physics.add.group()
         this.ghost_zombie = this.physics.add.group()
         this.fast_zombie = this.physics.add.group()
@@ -561,7 +590,12 @@ export default class Game extends Phaser.Scene{
             Main_menu(this.button_list, this.start, this.title, this.building)
         }
         if(state === 'Cutscene'){
-            console.log("cut scene")
+            this.title.destroy()
+            this.start.destroy()
+            this.main_menu_zombies.destroy(true)
+            this.building.destroy()
+            this.move_skull("down")
+            Cut_scene()
         }
         if(state === 'Battle'){
             if(this.bat_fired === false){
@@ -914,6 +948,37 @@ export default class Game extends Phaser.Scene{
             this.button_list[i].x = 128*[i+1]
             this.button_list[i].visible = true
             
+        }
+    }
+
+    move_skull(dir){
+        if(dir === "up"){
+            for(let i = 0; i < this.skull_parts.length; i++){
+                if(this.skull_parts[i].y > -100){
+                    this.skull_parts[i].y -= 10
+                }
+            }
+        }
+        if(dir === "down"){
+            for(let i = 0; i < this.skull_parts.length; i++){
+                if(this.skull_parts[i].y < 300){
+                    this.skull_parts[i].y += 10
+                } else {
+                    if(this.movement_eyes === 'right'){
+                        this.skull_parts[1].x += 0.2
+                        if(this.skull_parts[1].x > 213){
+                            this.movement_eyes = 'left'
+                        }
+                    }
+                    if(this.movement_eyes === 'left'){
+                        this.skull_parts[1].x -= 0.2
+                        if(this.skull_parts[1].x < 202){
+                            this.movement_eyes = 'right'
+                        }
+                    }
+                    
+                }
+            }
         }
     }
 }
