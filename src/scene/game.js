@@ -447,6 +447,24 @@ export default class Game extends Phaser.Scene{
                 frameRate: 10,
                 repeat: -1 // Infinite loop
         });
+        this.anims.create({
+                key: 'throwing',
+                frames: this.anims.generateFrameNumbers('hero_bomb', { start: 0, end: 4 }),
+                frameRate: 10,
+                repeat: -1 // Infinite loop
+        });
+        this.anims.create({
+                key: 'blasting',
+                frames: this.anims.generateFrameNumbers('hero_shotgun', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1 // Infinite loop
+        });
+        this.anims.create({
+                key: 'swording',
+                frames: this.anims.generateFrameNumbers('hero_sword', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1 // Infinite loop
+        });
         //tiles
         this.tiles = this.physics.add.group()
         let tile_list = ['tile1', 'tile2', 'tile3', 'tile4', 'tile5']
@@ -687,6 +705,7 @@ export default class Game extends Phaser.Scene{
             if(this.bat_fired === false){
                 
                 if(level_num === 1){
+                    this.building = this.physics.add.sprite(320, 320, 'build')
                     for(let z = 0; z < this.zombie_list.length; z++){
                         for(let i = 0; i < this.zombie_list[z].children.entries.length; i++){
                             this.zombie_list[z].children.entries[i].disableBody(true, true)
@@ -702,7 +721,8 @@ export default class Game extends Phaser.Scene{
                     this.ptut.destroy()
                     this.current_selected = [this.base_zombie, 'base_zombie', 'walk', 3]
                     this.hero_1.destroy()
-                    this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
+                    this.hero_1 = this.physics.add.sprite(50, 50, 'hero_bomb')
+                    this.hero_1.play('throwing')
                     this.timer.delay = 200
                     //this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
                     this.change_butt_pos()
@@ -714,7 +734,8 @@ export default class Game extends Phaser.Scene{
                 }
                 if(level_num === 2){
                     this.hero_1.destroy()
-                    this.hero_1 = this.physics.add.sprite(30, 30, 'test_hero')
+                    this.hero_1 = this.physics.add.sprite(30, 30, 'hero_shotgun')
+                    this.hero_1.play('blasting')
                     this.hero_1.body.immovable = true;
                     this.change_butt_pos()
                     saved_movement_ind = 0
@@ -725,7 +746,8 @@ export default class Game extends Phaser.Scene{
                 if(level_num === 3){
                     this.hero_1.destroy()
                     this.timer.delay = 500
-                    this.hero_1 = this.physics.add.sprite(520, 520, 'hero_3')
+                    this.hero_1 = this.physics.add.sprite(520, 520, 'hero_sword')
+                    this.hero_1.play('swording')
                     this.hero_1.body.immovable = true;
                     this.change_butt_pos()
                     saved_movement_ind = 0
