@@ -280,6 +280,7 @@ export default class Game extends Phaser.Scene{
         this.title = null
         this.start = null
         this.building = null
+        this.tutorial_fired = false
 
         this.jaw = null
         this.skull = null
@@ -346,6 +347,11 @@ export default class Game extends Phaser.Scene{
         this.load.image('stut', './res/skip_tutorial.png')
         this.load.image('ptut', './res/play_tutorial.png')
 
+        //tutorial
+        this.load.image('tt1', './res/tut_text_1.png')
+        this.load.image('tt2', './res/tut_text_2.png')
+        this.load.image('tt3', './res/tut_text_3.png')
+
         //TILES
         this.load.image('tile1', './res/Background tile 1.png')
         this.load.image('tile2', './res/Background tile 2.png')
@@ -355,6 +361,26 @@ export default class Game extends Phaser.Scene{
         
         //this.load.image('base_zombie', '../res/test.jpg')
         //for the heros
+        this.load.spritesheet('little_girl', './res/Tutorial girl.png',{
+            frameWidth: 64,
+            frameHeight: 64
+        })
+
+        this.load.spritesheet('hero_bomb', './res/Hero - bomb.png', {
+            frameWidth: 64,
+            frameHeight: 64
+        })
+
+        this.load.spritesheet('hero_shotgun', './res/Hero - shotgun.png', {
+            frameWidth: 64,
+            frameHeight: 64
+        })
+        
+        this.load.spritesheet('hero_sword', './res/Hero - sword boi.png', {
+            frameWidth: 64,
+            frameHeight: 64
+        })
+
         this.load.image('hero_1', './res/hero.png')
         this.load.image('test_hero', './res/test_hero.png')
         this.load.image('hero_3', './res/hero_3.png')
@@ -415,9 +441,12 @@ export default class Game extends Phaser.Scene{
 
     create()
     {   
-        //main_menu
-        
-
+        this.anims.create({
+                key: 'bobbing',
+                frames: this.anims.generateFrameNumbers('little_girl', { start: 0, end: 1 }),
+                frameRate: 10,
+                repeat: -1 // Infinite loop
+        });
         //tiles
         this.tiles = this.physics.add.group()
         let tile_list = ['tile1', 'tile2', 'tile3', 'tile4', 'tile5']
@@ -430,6 +459,15 @@ export default class Game extends Phaser.Scene{
         }
         
         this.upB = this.physics.add.sprite(300, 300, 'upBack')
+
+        //tutorial
+        this.tt1 = this.physics.add.sprite(400, 480,'tt1')
+        this.tt2 = this.physics.add.sprite(320, 70,'tt2')
+        this.tt3 = this.physics.add.sprite(170, 250,'tt3')
+        this.tt1.visible = false
+        this.tt2.visible = false
+        this.tt3.visible = false
+
 
         //amunition objects
         this.bl = this.physics.add.group()
@@ -604,16 +642,61 @@ export default class Game extends Phaser.Scene{
             this.building.destroy()
             this.move_skull("down")
             Cut_scene(this.text_scroll, this.stut, this.ptut)
+            
         }
         if(state === 'Tutorial'){
-            this.stut.destroy()
-            this.ptut.destroy()
+            if(this.tutorial_fired === false){
+                this.tt1.visible = true
+                this.tt2.visible = true
+                this.tt3.visible = true
+                timerText.visible = true
+                this.building = this.physics.add.sprite(320, 320, 'build')
+                this.hero_1.destroy()
+                this.hero_1 = this.physics.add.sprite(310, 350, 'little_girl')
+                this.hero_1.setScale(1.5)
+                this.hero_1.play('bobbing') 
+                this.upB.visible = false
+                this.text_scroll.destroy()
+                this.stut.destroy()
+                this.ptut.destroy()
+                this.change_butt_pos()
+                this.hero_1.body.immovable = true
+                saved_movement_ind = 0
+                path = [[310, 350]]
+                pat = 'center'
+                this.add_collision(this.zombie_list, this.hero_1)
+                this.tutorial_fired = true
+                
+            }
+            
+            timerText.setText(`${timeSeconds}`)
+            this.setValue(this.healthBar, cur_h_health, this.hero_1);
+            if(this.alive === true){
+                followPath(this.hero_1, saved_movement_ind, path, hero_speed, pat)
+            }
+
+           
+            this.move_skull('up')
+            
+            this.zombie_run(this.hero_1, this.base_zombie, base_speed)
+            if(cur_h_health <= 0){
+                state = 'Battle'
+            }
         }
         if(state === 'Battle'){
             if(this.bat_fired === false){
                 
                 if(level_num === 1){
-                    
+                    for(let z = 0; z < this.zombie_list.length; z++){
+                        for(let i = 0; i < this.zombie_list[z].children.entries.length; i++){
+                            this.zombie_list[z].children.entries[i].disableBody(true, true)
+                            this.zombie_list[z].children.entries[i].health = 0
+                    }}
+                    this.tt1.destroy()
+                    this.tt2.destroy()
+                    this.tt3.destroy()
+                    cur_h_health = 100
+                    this.text_scroll.destroy()
                     timerText.visible = true
                     this.stut.destroy()
                     this.ptut.destroy()
@@ -674,7 +757,7 @@ export default class Game extends Phaser.Scene{
                 }
             }
             this.move_skull("up")
-            this.text_scroll.destroy()
+            
 
             if(this.alive === true){
                 followPath(this.hero_1, saved_movement_ind, path, hero_speed, pat)
@@ -691,10 +774,7 @@ export default class Game extends Phaser.Scene{
             //this changes the size of the heros health bar
             this.setValue(this.healthBar, cur_h_health, this.hero_1);
 
-            //console.log(this.hero_1.x)
-            for(let i = 0; i < this.zombie_list.length; i++){
-
-            }
+            
             //to make the zombies move and flip
             this.zombie_run(this.hero_1, this.base_zombie, base_speed)
             this.zombie_run(this.hero_1, this.ghost_zombie, base_speed)
@@ -824,7 +904,7 @@ export default class Game extends Phaser.Scene{
     ///for handeling the left clicks, it will need to drop a zombie
     handleLeftClick(pointer) {
         if(this.over_button === false){
-            if(state === 'Battle'){
+            if(state === 'Battle' || state === 'Tutorial'){
                 if (pointer.leftButtonDown()) {
                     
                     //this.create_h(this.base_zombie, 'base_zombie', 0.1, 1, pointer.x, pointer.y, 'be_cool')
@@ -916,7 +996,7 @@ export default class Game extends Phaser.Scene{
     }
 
     updateClock(){
-        if(state === 'Battle'){
+        if(state === 'Battle' || state == 'Tutorial'){
             if(timeSeconds !== 0){
                 //timeMinutes += 1
                 timeSeconds -= 1
@@ -942,7 +1022,7 @@ export default class Game extends Phaser.Scene{
                     state = 'Tutorial'
                 }
             }
-            if(state === 'Battle'){
+            if(state === 'Battle' || state === 'Tutorial'){
                 this.current_selected = s_list
             }    
             if(state  === 'Upgrade'){
@@ -953,14 +1033,14 @@ export default class Game extends Phaser.Scene{
         })
 
         button.on('pointerover', ()=> {
-            if(state === 'Battle'){
+            if(state === 'Battle' || state === 'Tutorial'){
                 this.over_button = true
                 button.setFrame(f_list[1])
             }
         })
 
         button.on('pointerout', ()=>{
-            if(state === "Battle"){
+            if(state === "Battle" || state === 'Tutorial'){
                 this.over_button = false
                 button.setFrame(f_list[0])}
         })
