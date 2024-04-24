@@ -1,5 +1,5 @@
 import Phaser from '../lib/phaser.js'
-import {Cut_scene, Main_menu} from '/scene/cutscene.js'
+import {Cut_scene, Main_menu} from './cutscene.js'
 
 
 ///vars that need to be used across the file
@@ -8,7 +8,7 @@ let path = null
 let pat = null
 let cur_h_health = 100
 let zombies_lost = 0
-let timeSeconds = 10
+let timeSeconds = 100
 let timerText = null
 let upgradeText = null
 let loseText = null
@@ -288,6 +288,8 @@ export default class Game extends Phaser.Scene{
         this.behind = null
         this.skull_parts = null
         this.movement_eyes = 'right'
+        this.stut = null
+        this.ptut = null
 
         this.main_menu_zombies = null
         this.base_zombie = null
@@ -341,6 +343,8 @@ export default class Game extends Phaser.Scene{
         this.load.image('eyes', './res/eyes.png')
         this.load.image('behind', './res/behind_skull.png')
         this.load.image('text_scroll', './res/text_scroll.png')
+        this.load.image('stut', './res/skip_tutorial.png')
+        this.load.image('ptut', './res/play_tutorial.png')
 
         //TILES
         this.load.image('tile1', './res/Background tile 1.png')
@@ -447,9 +451,13 @@ export default class Game extends Phaser.Scene{
         }
         this.start = this.physics.add.sprite(320, -20, 'start_but')
         this.title = this.physics.add.sprite(320, -200, 'title_card')
-        
+        this.stut = this.physics.add.sprite(175, -50, 'stut')
+        this.ptut = this.physics.add.sprite(475, -50, 'ptut')
+
         this.button_actions(this.start, [], [])
-        
+        this.button_actions(this.stut, 1, [])
+        this.button_actions(this.ptut, 2, [])
+
         //cut scene
         this.behind = this.physics.add.sprite(220, -100, 'behind')
         this.eyes = this.physics.add.sprite(220, -100, 'eyes')
@@ -457,7 +465,7 @@ export default class Game extends Phaser.Scene{
         this.skull = this.physics.add.sprite(220, -100, 'skull')
         this.jaw = this.physics.add.sprite(220, -100, 'jaw')
         this.skull_parts = [this.behind, this.eyes, this.inside, this.skull, this.jaw]
-        this.text_scroll = this.physics.add.sprite(450, 300, 'text_scroll')
+        this.text_scroll = this.physics.add.sprite(450, -300, 'text_scroll')
         
         
 
@@ -595,12 +603,22 @@ export default class Game extends Phaser.Scene{
             this.main_menu_zombies.destroy(true)
             this.building.destroy()
             this.move_skull("down")
-            Cut_scene()
+            Cut_scene(this.text_scroll, this.stut, this.ptut)
+        }
+        if(state === 'Tutorial'){
+            this.stut.destroy()
+            this.ptut.destroy()
         }
         if(state === 'Battle'){
             if(this.bat_fired === false){
                 
                 if(level_num === 1){
+                    
+                    timerText.visible = true
+                    this.stut.destroy()
+                    this.ptut.destroy()
+                    this.current_selected = [this.base_zombie, 'base_zombie', 'walk', 3]
+                    this.hero_1.destroy()
                     this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
                     this.timer.delay = 200
                     //this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
@@ -609,6 +627,7 @@ export default class Game extends Phaser.Scene{
                     this.hero_1.body.immovable = true;
                     path = [[100, 100],[500, 200], [600, 600], [100, 600], [300, 300]]
                     pat = 'rand'
+                    this.add_collision(this.zombie_list, this.hero_1)
                 }
                 if(level_num === 2){
                     this.hero_1.destroy()
@@ -654,6 +673,8 @@ export default class Game extends Phaser.Scene{
                     upgradeText.visible = false
                 }
             }
+            this.move_skull("up")
+            this.text_scroll.destroy()
 
             if(this.alive === true){
                 followPath(this.hero_1, saved_movement_ind, path, hero_speed, pat)
@@ -913,6 +934,14 @@ export default class Game extends Phaser.Scene{
             if(state === 'Main_menu'){
                 state = 'Cutscene'
             }
+            if(state === 'Cutscene'){
+                if(s_list === 1){
+                    state = 'Battle'
+                }
+                if(s_list === 2){
+                    state = 'Tutorial'
+                }
+            }
             if(state === 'Battle'){
                 this.current_selected = s_list
             }    
@@ -962,7 +991,7 @@ export default class Game extends Phaser.Scene{
         if(dir === "down"){
             for(let i = 0; i < this.skull_parts.length; i++){
                 if(this.skull_parts[i].y < 300){
-                    this.skull_parts[i].y += 10
+                    this.skull_parts[i].y += 5
                 } else {
                     if(this.movement_eyes === 'right'){
                         this.skull_parts[1].x += 0.2
