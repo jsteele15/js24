@@ -11,14 +11,16 @@ let zombies_lost = 0
 let timeSeconds = 100
 let timerText = null
 let upgradeText = null
+let scoreText = null
 let loseText = null
 let level_num = 1
 let hero_speed = 2
 let base_speed = 1
+let score = 0
 //max for zombies
 
 //state machine for inside the class, im thinking, Menu, Upgrade, Battle
-let state = 'Tutorial'
+let state = 'Main_menu'
 
 //attack for the zombies
 const attack_hero = function(hero, z_list){
@@ -252,6 +254,18 @@ export default class Game extends Phaser.Scene{
         this.otz = null
         this.button_list = []
         
+        //for upgrades
+        this.choose_upgrade = null
+        this.ghost_tool = null
+        this.bomb_tool = null
+        this.sheild_tool = null
+        this.fast_tool = null
+        this.spit_tool = null
+        this.otz_tool = null
+        this.tool_tips = null
+
+        this.win_text = null
+
         //for timers
         this.timer = null
         //current selected will include the curent zombie, and then the 'string name' then animation name
@@ -259,7 +273,17 @@ export default class Game extends Phaser.Scene{
     }
 
     preload()
-    {   
+    {   //win text
+        this.load.image('win_text', './res/win_text.png')
+        //tool tipes
+        this.load.image('choose_upgrade', './res/cau.png')
+        this.load.image('ghost_tool', './res/ghost_tool.png')
+        this.load.image('bomb_tool', './res/bomb_tool.png')
+        this.load.image('fast_tool', './res/fast_tool.png')
+        this.load.image('spit_tool', './res/spit_tool.png')
+        this.load.image('sheild_tool', './res/sheild_tool.png')
+        this.load.image('otz_tool', './res/otz_tool.png')
+
         //start
         this.load.image('start_but', './res/start.png')
         this.load.image('title_card', './res/title.png')
@@ -407,6 +431,20 @@ export default class Game extends Phaser.Scene{
         }
         
         this.upB = this.physics.add.sprite(300, 300, 'upBack')
+        this.win_text = this.physics.add.sprite(450, 100, 'win_text')
+        this.win_text.visible = false
+        this.choose_upgrade = this.physics.add.sprite(450, 100, 'choose_upgrade')
+        this.ghost_tool = this.physics.add.sprite(480, 200, 'ghost_tool')
+        this.bomb_tool = this.physics.add.sprite(480, 300, 'bomb_tool')
+        this.fast_tool = this.physics.add.sprite(480, 200, 'fast_tool')
+        this.spit_tool = this.physics.add.sprite(480, 200, 'spit_tool')
+        this.sheild_tool = this.physics.add.sprite(480, 300, 'sheild_tool')
+        this.otz_tool = this.physics.add.sprite(480, 300, 'otz_tool')
+
+        this.tool_tips = [this.choose_upgrade, this.ghost_tool, this.bomb_tool, this.sheild_tool, this.fast_tool, this.spit_tool, this.otz_tool]
+        for(let i = 0; i < this.tool_tips.length; i++){
+            this.tool_tips[i].visible = false
+        }
 
         //tutorial
         this.tt1 = this.physics.add.sprite(400, 480,'tt1')
@@ -425,7 +463,7 @@ export default class Game extends Phaser.Scene{
         //heros
 
         this.exclusion = this.physics.add.sprite(310, 100, 'exc')
-        
+        this.exclusion.visible = false
         
         this.hero_1 = this.physics.add.sprite(350, -4000, 'hero_1')
 
@@ -441,6 +479,7 @@ export default class Game extends Phaser.Scene{
         }
         this.start = this.physics.add.sprite(320, -20, 'start_but')
         this.title = this.physics.add.sprite(320, -200, 'title_card')
+        
         this.stut = this.physics.add.sprite(175, -50, 'stut')
         this.ptut = this.physics.add.sprite(475, -50, 'ptut')
 
@@ -449,14 +488,14 @@ export default class Game extends Phaser.Scene{
         this.button_actions(this.ptut, 2, [])
 
         //cut scene
-        this.behind = this.physics.add.sprite(220, -100, 'behind')
-        this.eyes = this.physics.add.sprite(220, -100, 'eyes')
-        this.inside = this.physics.add.sprite(220, -100, 'inside')
-        this.skull = this.physics.add.sprite(220, -100, 'skull')
-        this.jaw = this.physics.add.sprite(220, -100, 'jaw')
+        this.behind = this.physics.add.sprite(200, -100, 'behind')
+        this.eyes = this.physics.add.sprite(200, -100, 'eyes')
+        this.inside = this.physics.add.sprite(200, -100, 'inside')
+        this.skull = this.physics.add.sprite(200, -100, 'skull')
+        this.jaw = this.physics.add.sprite(200, -100, 'jaw')
         this.skull_parts = [this.behind, this.eyes, this.inside, this.skull, this.jaw]
         this.text_scroll = this.physics.add.sprite(450, -300, 'text_scroll')
-        
+        this.text_scroll.visible = false
         
 
         //zombies
@@ -588,6 +627,8 @@ export default class Game extends Phaser.Scene{
             Main_menu(this.button_list, this.start, this.title, this.building)
         }
         if(state === 'Cutscene'){
+           
+            
             this.title.destroy()
             this.start.destroy()
             this.main_menu_zombies.destroy(true)
@@ -606,6 +647,7 @@ export default class Game extends Phaser.Scene{
                 this.hero_1.destroy()
                 this.hero_1 = this.physics.add.sprite(310, 350, 'little_girl')
                 this.hero_1.setScale(1.5)
+                this.exclusion.visible = true
                 this.exclusion.x = this.hero_1.x
                 this.exclusion.y = this.hero_1.y
                 this.hero_1.play('bobbing') 
@@ -641,6 +683,7 @@ export default class Game extends Phaser.Scene{
             if(this.bat_fired === false){
                 
                 if(level_num === 1){
+                    this.exclusion.visible = true
                     this.building = this.physics.add.sprite(320, 320, 'build')
                     for(let z = 0; z < this.zombie_list.length; z++){
                         for(let i = 0; i < this.zombie_list[z].children.entries.length; i++){
@@ -670,7 +713,7 @@ export default class Game extends Phaser.Scene{
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
                 if(level_num === 2){
-                    this.hero_1.destroy()
+                    
                     this.hero_1 = this.physics.add.sprite(30, 30, 'hero_shotgun')
                     this.hero_1.play('blasting')
                     this.hero_1.body.immovable = true;
@@ -681,7 +724,7 @@ export default class Game extends Phaser.Scene{
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
                 if(level_num === 3){
-                    this.hero_1.destroy()
+                    
                     this.timer.delay = 500
                     this.hero_1 = this.physics.add.sprite(520, 520, 'hero_sword')
                     this.hero_1.play('swording')
@@ -695,7 +738,7 @@ export default class Game extends Phaser.Scene{
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
                 if(level_num === 4){
-                    this.hero_1.destroy()
+                    
                     this.sword = null
                     this.hero_1 = this.physics.add.sprite(300, 300, 'hero_3')
                     this.hero_1.body.immovable = true;
@@ -706,17 +749,21 @@ export default class Game extends Phaser.Scene{
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
 
-                this.upB.visible = false
+                
                 this.alive = true
                 cur_h_health = 100
                 this.bat_fired = true
                 this.up_fired = false
+
                 if(upgradeText != null){
                     upgradeText.visible = false
                 }
+                if(scoreText != null){
+                    scoreText.visible = false
+                }
             }
             this.move_skull("up")
-            
+            this.exclusion.visible = true
             this.exclusion.x = this.hero_1.x
             this.exclusion.y = this.hero_1.y
 
@@ -749,6 +796,14 @@ export default class Game extends Phaser.Scene{
             //this works out where the bullets are in relation to the hero, if it ever leaves the square around the hero itll stop the bullet
             //this enables the screen not to get clogged up with stuff
             //probably better off moving this too a function but will keep this for now and move it on saturday
+
+            this.move_skull("up")
+
+            if(cur_h_health <= 0){
+                
+                state = 'Upgrade'
+            }
+            
             for(let i = 0; i < this.bl.children.entries.length; i++){
                 if(this.bl.children.entries[i].x < this.hero_1.x+500 && this.bl.children.entries[i].x > this.hero_1.x-500 && this.bl.children.entries[i].y < this.hero_1.y+500 && this.bl.children.entries[i].y > this.hero_1.y-500){
                     
@@ -769,35 +824,68 @@ export default class Game extends Phaser.Scene{
                     this.di.children.entries[i].disableBody(true, true);
                 }
             }
-            //console.log(this.bl.children.entries)
-        
-
-            if(cur_h_health <= 0){
-                
-                state = 'Upgrade'
+            for(let i = 0; i < this.sw.children.entries.length; i++){
+                if(this.sw.children.entries[i].x < this.hero_1.x+200 && this.sw.children.entries[i].x > this.hero_1.x-200 && this.sw.children.entries[i].y < this.hero_1.y+200 && this.sw.children.entries[i].y > this.hero_1.y-200){
+                    
+                }  else {
+                    this.sw.children.entries[i].disableBody(true, true);
+                }
+                if (this.alive === 'false'){
+                    this.sw.children.entries[i].disableBody(true, true);
+                }
             }
+            this.building.visible = true
+ 
         }
         if(state === 'Upgrade'){
             if(this.up_fired === false){
+                score += timeSeconds
                 timeSeconds = 100
                 if(level_num >= 4){
-                    
+                    this.hero_1.destroy()
 
-                    this.upB = this.physics.add.sprite(300, 200, 'upBack')
-                    this.upB.visible = true
-                    upgradeText = this.add.text(200, 200, 'testing', {
+                    
+                    upgradeText = this.add.text(450, 200, 'testing', {
                         fontFamily: 'Stencil Std, fantasy',
                         fontSize: '40px',
-                        color: '#ffffff',
+                        color: '#000000',
                     })
                     upgradeText.setOrigin(0.5);
-                    upgradeText.setText('You won')
+                    upgradeText.setText(`Zombies used: ${zombies_lost}`)
 
+                    scoreText = this.add.text(450, 300, 'testing', {
+                        fontFamily: 'Stencil Std, fantasy',
+                        fontSize: '40px',
+                        color: '#000000',
+                    })
+                    scoreText.setOrigin(0.5);
+                    scoreText.setText(`Score: ${score*4}`)
+                    if(upgradeText != null){
+                        upgradeText.visible = false
+                    }
+                    if(scoreText != null){
+                        scoreText.visible = false
+                    }
+                    for(let i = 0; i < this.button_list.length; i++){
+                        this.button_list[i].visible = false
+                        
+                    }
+                    for(let z = 0; z < this.zombie_list.length; z++){
+                        for(let i = 0; i < this.zombie_list[z].children.entries.length; i++){
+                            this.zombie_list[z].children.entries[i].health = 0
+                            this.setValue(this.zombie_list[z].children.entries[i].hb, this.zombie_list[z].children.entries[i].health, this.zombie_list[z].children.entries[i]);
+                            this.zombie_list[z].children.entries[i].disableBody(true, true)
+                            
+                    }}
+                    level_num+= 1
                     this.up_fired = true
+
                 }
                 if(level_num < 4){
-                    this.upB = this.physics.add.sprite(300, 200, 'upBack')
-                    this.upB.visible = true
+                    
+                    
+                    this.hero_1.destroy()
+                    
                     this.base_cur =  0
                     this.ghost_cur = 0
                     this.fast_cur = 0
@@ -810,21 +898,6 @@ export default class Game extends Phaser.Scene{
                         
                     }
 
-                    this.left_list[level_num-1].visible = true
-                    this.right_list[level_num-1].visible = true
-                    this.left_list[level_num-1].x = 300
-                    this.right_list[level_num-1].x = 400
-
-                    
-                    upgradeText = this.add.text(200, 200, 'testing', {
-                        fontFamily: 'Stencil Std, fantasy',
-                        fontSize: '40px',
-                        color: '#ffffff',
-                    })
-                    upgradeText.setOrigin(0.5);
-                    upgradeText.setText('choose an upgrade')
-                    upgradeText.visible = true
-
                     
                     level_num += 1
                     //this.hero_1 = null
@@ -832,20 +905,29 @@ export default class Game extends Phaser.Scene{
                     //disable all the zombies on the screen
                     for(let z = 0; z < this.zombie_list.length; z++){
                         for(let i = 0; i < this.zombie_list[z].children.entries.length; i++){
-                            this.zombie_list[z].children.entries[i].disableBody(true, true)
                             this.zombie_list[z].children.entries[i].health = 0
+                            this.setValue(this.zombie_list[z].children.entries[i].hb, this.zombie_list[z].children.entries[i].health, this.zombie_list[z].children.entries[i]);
+                            this.zombie_list[z].children.entries[i].disableBody(true, true)
+                            
                     }}
                     this.up_fired = true
                 }
                 
                 }
-            
+            this.move_skull("down")
+            this.building.visible = false
+            this.exclusion.visible = false
 
+        }
+        if(state === 'Win'){
+            console.log("win")
+            this.move_skull("down")
+            this.building.visible = false
+            this.exclusion.visible = false
         }
         if(state === "Lose"){
             if(this.lose_fired === false){
-                this.upB = this.physics.add.sprite(300, 200, 'upBack')
-                this.upB.visible = true
+                
                 loseText = this.add.text(200, 200, 'testing', {
                     fontFamily: 'Stencil Std, fantasy',
                     fontSize: '40px',
@@ -898,7 +980,7 @@ export default class Game extends Phaser.Scene{
         }
         if(zomb.name === 'sheild'){
             if(zomb.health >= 1){
-                zomb.health -= 50
+                zomb.health -= 5
             } 
             if(zomb.health <= 1) {
                 zomb.disableBody(true, true);
@@ -959,7 +1041,7 @@ export default class Game extends Phaser.Scene{
         }
         if(zomb.name === 'sheild'){
             if(zomb.health >= 1){
-                zomb.health -= 50
+                zomb.health -= 5
             } 
             if(zomb.health <= 1) {
                 zomb.disableBody(true, true);
@@ -1082,10 +1164,6 @@ export default class Game extends Phaser.Scene{
             b_z.scale = s
             b_z.name = z_string
 
-            if(b_z.name === "sheild"){
-                b_z.health = 500
-            }
-
             b_z.hb = this.makeBar(x, y, 0x2ecc71);
             
             const body = b_z.body
@@ -1192,7 +1270,7 @@ export default class Game extends Phaser.Scene{
                     this.inside_ex = true}
                 else{
                     this.over_button = true
-                    button.setFrame(f_list[0])}
+                    button.setFrame(f_list[1])}
             }
         })
 
@@ -1208,6 +1286,7 @@ export default class Game extends Phaser.Scene{
     }
 
     change_butt_pos(){
+
         for(let i = 0; i < this.left_list.length; i++){
             this.left_list[i].visible = false
         }
@@ -1217,12 +1296,16 @@ export default class Game extends Phaser.Scene{
         for(let i = 0; i < this.button_list.length; i++){
             this.button_list[i].x = 128*[i+1]
             this.button_list[i].visible = true
-            
+            this.button_list[i].y = 550
         }
     }
 
     move_skull(dir){
         if(dir === "up"){
+            this.upB.visible = false
+            for(let i = 0; i < this.tool_tips.length; i++){
+                this.tool_tips[i].visible = false
+            }
             for(let i = 0; i < this.skull_parts.length; i++){
                 if(this.skull_parts[i].y > -100){
                     this.skull_parts[i].y -= 10
@@ -1230,20 +1313,72 @@ export default class Game extends Phaser.Scene{
             }
         }
         if(dir === "down"){
+
             for(let i = 0; i < this.skull_parts.length; i++){
+                
+
                 if(this.skull_parts[i].y < 300){
                     this.skull_parts[i].y += 5
                 } else {
+                    this.upB.x = 450
+                    this.upB.y = 250
+                    this.upB.visible = true
+                    
                     if(this.movement_eyes === 'right'){
                         this.skull_parts[1].x += 0.2
-                        if(this.skull_parts[1].x > 213){
+                        if(this.skull_parts[1].x > 193){
                             this.movement_eyes = 'left'
                         }
                     }
                     if(this.movement_eyes === 'left'){
                         this.skull_parts[1].x -= 0.2
-                        if(this.skull_parts[1].x < 202){
+                        if(this.skull_parts[1].x < 182){
                             this.movement_eyes = 'right'
+                        }
+                    }
+                    if(state === 'Cutscene'){
+                        this.text_scroll.visible = true
+                    }
+                    if(state === 'Upgrade' && level_num === 2){
+                        this.left_list[level_num-2].visible = true
+                        this.right_list[level_num-2].visible = true
+                        this.left_list[level_num-2].x = 320
+                        this.left_list[level_num-2].y = 200
+                        this.right_list[level_num-2].x = 320
+                        this.right_list[level_num-2].y = 300
+                        this.tool_tips[0].visible = true
+                        this.tool_tips[1].visible = true
+                        this.tool_tips[2].visible = true
+                    }
+                    if(state === 'Upgrade' && level_num === 3){
+                        this.left_list[level_num-2].visible = true
+                        this.right_list[level_num-2].visible = true
+                        this.left_list[level_num-2].x = 320
+                        this.left_list[level_num-2].y = 200
+                        this.right_list[level_num-2].x = 320
+                        this.right_list[level_num-2].y = 300
+                        this.tool_tips[0].visible = true
+                        this.tool_tips[5].visible = true
+                        this.tool_tips[3].visible = true
+                    }
+                    if(state === 'Upgrade' && level_num === 4){
+                        this.left_list[level_num-2].visible = true
+                        this.right_list[level_num-2].visible = true
+                        this.left_list[level_num-2].x = 320
+                        this.left_list[level_num-2].y = 200
+                        this.right_list[level_num-2].x = 320
+                        this.right_list[level_num-2].y = 300
+                        this.tool_tips[0].visible = true
+                        this.tool_tips[4].visible = true
+                        this.tool_tips[6].visible = true
+                    }
+                    if(state === 'Upgrade' && level_num === 5){
+                        this.win_text.visible = true
+                        if(upgradeText != null){
+                            upgradeText.visible = true
+                        }
+                        if(scoreText != null){
+                            scoreText.visible = true
                         }
                     }
                     
