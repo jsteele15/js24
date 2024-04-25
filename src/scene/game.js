@@ -227,7 +227,7 @@ export default class Game extends Phaser.Scene{
         this.sheild_max = 3
         this.bomb_max = 3
         this.spit_max = 3
-        this.xotz_max = 1
+        this.otz_max = 1
 
         //current
         this.base_cur =  0
@@ -594,18 +594,7 @@ export default class Game extends Phaser.Scene{
         //let particles = this.add.particles('parts')
         let particles = this.add.particles('parts')
         
-        //this is for creating particle, it cannot be used to directly interact with game objects, but i could use them to make the game more juicy
         
-        /*
-        this.emitter.setPosition(100, 100);
-        
-        this.emitter.setFrequency(1)*/
-        //this.emitter.start()
-        //this.emitter.explode(1000, 100, 100)
-        //this.emitter.active = false;
-        
-        //this.create_h(this.base_zombie, 'base_zombie', 0.1, 1, 150, 400, 'be_cool')
-        //create_h(hero_1, 'hero_1', 1, 1)
 
         //here if the zombies hit the player the player dies straight away, will need to change later to reduce healthpulapulapula
         this.add_collision(this.zombie_list, this.hero_1)
@@ -1338,6 +1327,10 @@ export default class Game extends Phaser.Scene{
                     this.over_button = true
                     button.setFrame(f_list[1])}
             }
+            if(state === 'Upgrade'){
+                this.over_button = true
+                button.setFrame(f_list[1])
+            }
         })
 
         button.on('pointerout', ()=>{
@@ -1347,7 +1340,10 @@ export default class Game extends Phaser.Scene{
                 else{
                     this.over_button = false
                     button.setFrame(f_list[0])}}
-                
+            if(state === 'Upgrade'){
+                this.over_button = true
+                button.setFrame(f_list[0])
+            }
         })
     }
 
