@@ -285,6 +285,13 @@ export default class Game extends Phaser.Scene{
 
         this.win_text = null
 
+        //counter for spawns
+        this.t1 = null
+        this.t2 = null
+        this.t3 = null
+        this.t4 = null
+        this.tlist = []
+
         //for sounds
         this.spawn = null
         this.bite = null
@@ -340,7 +347,7 @@ export default class Game extends Phaser.Scene{
         this.load.image('tt3', './res/tut_text_3.png')
 
         //TILES
-        this.load.image('tile1', './res/Background tile 1.png')
+        this.load.image('tile1', './res/Large background.png')
         this.load.image('tile2', './res/Background tile 2.png')
         this.load.image('tile3', './res/Background tile 3.png')
         this.load.image('tile4', './res/Background tile 4.png')
@@ -366,6 +373,11 @@ export default class Game extends Phaser.Scene{
         })
         
         this.load.spritesheet('hero_sword', './res/Hero - sword boi.png', {
+            frameWidth: 64,
+            frameHeight: 64
+        })
+
+        this.load.spritesheet('hero_sniper', './res/Hero - sniper.png', {
             frameWidth: 64,
             frameHeight: 64
         })
@@ -415,7 +427,7 @@ export default class Game extends Phaser.Scene{
             frameHeight: 64
         })
 
-        this.load.spritesheet('spitter', './res/spitter.png', {
+        this.load.spritesheet('spitter', './res/Fat zombied.png', {
             frameWidth: 64,
             frameHeight: 64
         })
@@ -462,8 +474,15 @@ export default class Game extends Phaser.Scene{
                 frameRate: 10,
                 repeat: -1 // Infinite loop
         });
+        this.anims.create({
+                key: 'snipeing',
+                frames: this.anims.generateFrameNumbers('hero_sniper', { start: 0, end: 1 }),
+                frameRate: 10,
+                repeat: -1 // Infinite loop
+        });
         //tiles
-        this.tiles = this.physics.add.group()
+        this.tiles = this.physics.add.sprite(320, 320 ,'tile1' )
+        /*
         let tile_list = ['tile1', 'tile2', 'tile3', 'tile4', 'tile5']
         for(let r = 0; r < 15; r++){
             for(let c = 0; c < 15; c++){
@@ -471,7 +490,7 @@ export default class Game extends Phaser.Scene{
                 let tile1 = this.tiles.create(64*r, 64*c, tile_list[randomInt])
                 //tile1.setScale(10)
             }
-        }
+        }*/
         
         this.upB = this.physics.add.sprite(300, 300, 'upBack')
         this.win_text = this.physics.add.sprite(450, 100, 'win_text')
@@ -514,6 +533,7 @@ export default class Game extends Phaser.Scene{
         this.main_menu_zombies = this.physics.add.group()
         let list_zombies = ['base_zombie', 'ghost', 'fast', 'fast', 'sheild', 'bomb', 'spitter', 'one_tough']
         this.building = this.physics.add.sprite(320, 500, 'build')
+
         for(let i = 0; i < 20; i++){
             for(let c = 0; c < 24; c++){
                 const randomInt = Math.floor(Math.random() * 8)
@@ -559,7 +579,7 @@ export default class Game extends Phaser.Scene{
         
         this.zombie_list = [this.base_zombie, this.ghost_zombie, this.fast_zombie, this.sheild_zombie, this.bomb_zombie, this.spit_zombie, this.one_tough_zombie]
         this.current_selected = [this.base_zombie, 'base_zombie', 'walk', 3, [this.base_max, this.base_cur]]
-        this.animation_list = ['walk', 'bounce', 'sprint', 'hold']
+        this.animation_list = ['walk', 'bounce', 'sprint', 'hold', 'boom', 'spit', 'stars']
 
         //for buttons
         this.nz = this.add.sprite(200, 590, 'buttons',2)
@@ -588,7 +608,7 @@ export default class Game extends Phaser.Scene{
         this.button_actions(this.fa, [this.fast_zombie, 'fast', 'sprint', 3, [this.fast_max, this.fast_cur]], [8, 9])
         this.button_actions(this.sh, [this.sheild_zombie, 'sheild', 'hold', 2 , [this.sheild_max, this.sheild_cur]], [10, 11])
         this.button_actions(this.bo, [this.bomb_zombie, 'bomb', 'boom', 1, [this.bomb_max, this.bomb_cur]], [0, 1])
-        this.button_actions(this.sp, [this.spit_zombie, 'spitter', 'spit', 1, [this.spit_max, this.spit_cur]], [6, 7])
+        this.button_actions(this.sp, [this.spit_zombie, 'spitter', 'spit', 7, [this.spit_max, this.spit_cur]], [6, 7])
         this.button_actions(this.ont, [this.one_tough_zombie, 'one_tough', 'stars', 1, [this.otz_max, this.otz_cur]], [12, 13])
         //particles, dont need just yet
         //let particles = this.add.particles('parts')
@@ -730,6 +750,7 @@ export default class Game extends Phaser.Scene{
             if(this.bat_fired === false){
                 
                 if(level_num === 1){
+                    timeSeconds = 100
                     this.exclusion.visible = true
                     this.base_cur =  0
                     this.building.destroy()
@@ -757,9 +778,20 @@ export default class Game extends Phaser.Scene{
                     this.change_butt_pos()
                     saved_movement_ind = 0
                     this.hero_1.body.immovable = true;
-                    path = [[100, 100],[500, 200], [600, 600], [100, 600], [300, 300]]
+                    path = [[100, 100],[560, 200], [560, 500], [100, 500], [300, 300]]
                     pat = 'rand'
+                    this.t1 = this.add.text(110, 490, 'testing', {
+                        fontFamily: 'Stencil Std, fantasy',
+                        fontSize: '20px',
+                        color: '#000000',
+                    })
+                    this.tlist.push(this.t1)
+                    for(let i = 0; i < this.tlist.length; i++){
+                        this.tlist[i].visible = true
+                    }
+                    
                     this.add_collision(this.zombie_list, this.hero_1)
+
                 }
                 if(level_num === 2){
                     
@@ -770,31 +802,63 @@ export default class Game extends Phaser.Scene{
                     saved_movement_ind = 0
                     path = [[30, 70], [620, 70]]
                     pat = 'top'
+
+                    this.t2 = this.add.text(240, 490, 'testing', {
+                        fontFamily: 'Stencil Std, fantasy',
+                        fontSize: '20px',
+                        color: '#000000',
+                    })
+                    this.tlist.push(this.t2)
+                    for(let i = 0; i < this.tlist.length; i++){
+                        this.tlist[i].visible = true
+                    }
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
                 if(level_num === 3){
                     
                     this.timer.delay = 500
+                    this.sword = this.sw.create(this.hero_1.x, this.hero_1.y, 'sword')
                     this.hero_1 = this.physics.add.sprite(520, 520, 'hero_sword')
                     this.hero_1.play('swording')
                     this.hero_1.body.immovable = true;
                     this.change_butt_pos()
                     saved_movement_ind = 0
-                    this.sword = this.sw.create(this.hero_1.x, this.hero_1.y, 'sword')
                     
-                    path = [[520, 520], [520, 70], [70, 70], [70, 520]]
+                    
+                    path = [[520, 480], [520, 70], [70, 70], [70, 480]]
                     pat = 'perimiter'
+
+                    this.t3 = this.add.text(370, 490, 'testing', {
+                        fontFamily: 'Stencil Std, fantasy',
+                        fontSize: '20px',
+                        color: '#000000',
+                    })
+                    this.tlist.push(this.t3)
+                    for(let i = 0; i < this.tlist.length; i++){
+                        this.tlist[i].visible = true
+                    }
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
                 if(level_num === 4){
                     
                     this.sword = null
-                    this.hero_1 = this.physics.add.sprite(300, 300, 'hero_3')
+                    this.hero_1 = this.physics.add.sprite(300, 300, 'hero_sniper')
+                    this.hero_1.play('snipeing') 
                     this.hero_1.body.immovable = true;
                     this.change_butt_pos()
                     saved_movement_ind = 0
                     path = [[300, 300]]
                     pat = 'center'
+
+                    this.t4 = this.add.text(500, 490, 'testing', {
+                        fontFamily: 'Stencil Std, fantasy',
+                        fontSize: '20px',
+                        color: '#000000',
+                    })
+                    this.tlist.push(this.t4)
+                    for(let i = 0; i < this.tlist.length; i++){
+                        this.tlist[i].visible = true
+                    }
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
 
@@ -815,6 +879,32 @@ export default class Game extends Phaser.Scene{
             this.exclusion.visible = true
             this.exclusion.x = this.hero_1.x
             this.exclusion.y = this.hero_1.y
+
+            this.t1.setText(`${this.base_max}/${this.base_cur}`)
+            if(this.t2 != null){
+                if(this.button_list[1] === this.gh){
+                    this.t2.setText(`${this.ghost_max}/${this.ghost_cur}`)
+                }
+                if(this.button_list[1] === this.bo){
+                    this.t2.setText(`${this.bomb_max}/${this.bomb_cur}`)
+                }
+            }
+            if(this.t3 != null){
+                if(this.button_list[2] === this.sp){
+                    this.t3.setText(`${this.spit_max}/${this.spit_cur}`)
+                }
+                if(this.button_list[2] === this.sh){
+                    this.t3.setText(`${this.sheild_max}/${this.sheild_cur}`)
+                }
+            }
+            if(this.t4 != null){
+                if(this.button_list[3] === this.fa){
+                    this.t4.setText(`${this.fast_max}/${this.fast_cur}`)
+                }
+                if(this.button_list[3] === this.ont){
+                    this.t4.setText(`${this.otz_max}/${this.otz_cur}`)
+                }
+            }
 
             if(this.alive === true){
                 followPath(this.hero_1, saved_movement_ind, path, hero_speed, pat)
@@ -873,16 +963,7 @@ export default class Game extends Phaser.Scene{
                     this.di.children.entries[i].disableBody(true, true);
                 }
             }
-            for(let i = 0; i < this.sw.children.entries.length; i++){
-                if(this.sw.children.entries[i].x < this.hero_1.x+200 && this.sw.children.entries[i].x > this.hero_1.x-200 && this.sw.children.entries[i].y < this.hero_1.y+200 && this.sw.children.entries[i].y > this.hero_1.y-200){
-                    
-                }  else {
-                    this.sw.children.entries[i].disableBody(true, true);
-                }
-                if (this.alive === 'false'){
-                    this.sw.children.entries[i].disableBody(true, true);
-                }
-            }
+            
             this.building.visible = true
  
         }
@@ -966,6 +1047,10 @@ export default class Game extends Phaser.Scene{
             this.move_skull("down")
             this.building.visible = false
             this.exclusion.visible = false
+
+            for(let i = 0; i < this.tlist.length; i++){
+                this.tlist[i].visible = false
+            }
 
         }
         if(state === 'Win'){
