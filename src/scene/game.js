@@ -27,17 +27,17 @@ const attack_hero = function(hero, z_list){
     
     if(cur_h_health > 0){
         if(z_list.name === "bomb"){
-            cur_h_health -= 50
-            z_list.health -= 100
+            cur_h_health -= 5
+            z_list.health -= 101
         } 
         if(z_list.name === "fast"){
-            cur_h_health -= 1
+            cur_h_health -= 0.5
         } 
         if(z_list.name === "spitter"){
             hero_speed = 1
         }
         else {
-            cur_h_health -= 2
+            cur_h_health -= 1
         }
     } else {
         this.bite.play()
@@ -132,7 +132,7 @@ const fireProjectile = function(proj, x, y, type, zombie_list){
     //you can change the type of fire rate by changing the type
     const thresholdY = 300;
     if(type === "rand"){
-        const choices = [200, -200]
+        const choices = [200, -200, -100, 100, 50, -50, 300, -300]
         const bomb = proj.create(x, y, 'dino')
         bomb.setVelocityY(Phaser.Math.RND.pick(choices))
         bomb.setVelocityX(Phaser.Math.RND.pick(choices))
@@ -432,7 +432,7 @@ export default class Game extends Phaser.Scene{
             frameHeight: 64
         })
 
-        this.load.spritesheet('one_tough', './res/otz.png', {
+        this.load.spritesheet('one_tough', './res/Zombie - otz.png', {
             frameWidth: 64,
             frameHeight: 64
         })
@@ -526,6 +526,7 @@ export default class Game extends Phaser.Scene{
 
         this.exclusion = this.physics.add.sprite(310, 100, 'exc')
         this.exclusion.visible = false
+        this.exclusion.setScale(2)
         
         this.hero_1 = this.physics.add.sprite(350, -4000, 'hero_1')
 
@@ -609,7 +610,7 @@ export default class Game extends Phaser.Scene{
         this.button_actions(this.sh, [this.sheild_zombie, 'sheild', 'hold', 2 , [this.sheild_max, this.sheild_cur]], [10, 11])
         this.button_actions(this.bo, [this.bomb_zombie, 'bomb', 'boom', 3, [this.bomb_max, this.bomb_cur]], [0, 1])
         this.button_actions(this.sp, [this.spit_zombie, 'spitter', 'spit', 7, [this.spit_max, this.spit_cur]], [6, 7])
-        this.button_actions(this.ont, [this.one_tough_zombie, 'one_tough', 'stars', 1, [this.otz_max, this.otz_cur]], [12, 13])
+        this.button_actions(this.ont, [this.one_tough_zombie, 'one_tough', 'stars', 3, [this.otz_max, this.otz_cur]], [12, 13])
         //particles, dont need just yet
         //let particles = this.add.particles('parts')
         let particles = this.add.particles('parts')
@@ -772,8 +773,9 @@ export default class Game extends Phaser.Scene{
                     this.current_selected = [this.base_zombie, 'base_zombie', 'walk', 3, [this.base_max, this.base_cur]]
                     this.hero_1.destroy()
                     this.hero_1 = this.physics.add.sprite(50, 50, 'hero_bomb')
+
                     this.hero_1.play('throwing')
-                    this.timer.delay = 200
+                    this.timer.delay = 50
                     //this.hero_1 = this.physics.add.sprite(50, 50, 'hero_1')
                     this.change_butt_pos()
                     saved_movement_ind = 0
@@ -794,7 +796,7 @@ export default class Game extends Phaser.Scene{
 
                 }
                 if(level_num === 2){
-                    
+                    this.exclusion.setScale(11, 2)
                     this.hero_1 = this.physics.add.sprite(30, 30, 'hero_shotgun')
                     this.hero_1.play('blasting')
                     this.hero_1.body.immovable = true;
@@ -802,7 +804,7 @@ export default class Game extends Phaser.Scene{
                     saved_movement_ind = 0
                     path = [[30, 70], [620, 70]]
                     pat = 'top'
-
+                    this.timer.delay = 200
                     this.t2 = this.add.text(240, 490, 'testing', {
                         fontFamily: 'Stencil Std, fantasy',
                         fontSize: '20px',
@@ -815,7 +817,7 @@ export default class Game extends Phaser.Scene{
                     this.add_collision(this.zombie_list, this.hero_1)
                 }
                 if(level_num === 3){
-                    
+                    this.exclusion.setScale(2)
                     this.timer.delay = 500
                     this.sword = this.sw.create(this.hero_1.x, this.hero_1.y, 'sword')
                     this.hero_1 = this.physics.add.sprite(520, 520, 'hero_sword')
@@ -1128,7 +1130,7 @@ export default class Game extends Phaser.Scene{
         }
         if(zomb.name === 'bomb'){
             if(zomb.health >= 1){
-                zomb.health -= 100
+                zomb.health -= 101
             } 
             if(zomb.health <= 1) {
                 zomb.disableBody(true, true);
@@ -1368,7 +1370,7 @@ export default class Game extends Phaser.Scene{
         if(state === 'Battle' || state == 'Tutorial'){
             if(timeSeconds !== 0){
                 //timeMinutes += 1
-                timeSeconds -= 1
+                timeSeconds -= 2
             } 
             if(timeSeconds === 0){
                 state = 'Lose'
