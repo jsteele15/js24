@@ -422,7 +422,7 @@ export default class Game extends Phaser.Scene{
             frameHeight: 64
         })
 
-        this.load.spritesheet('bomb', './res/bomb zombie.png', {
+        this.load.spritesheet('bomb', './res/Zombie - bomb.png', {
             frameWidth: 64,
             frameHeight: 64
         })
@@ -607,7 +607,7 @@ export default class Game extends Phaser.Scene{
         this.button_actions(this.gh, [this.ghost_zombie, 'ghost', 'bounce', 4, [this.ghost_max, this.ghost_cur]], [4, 5])
         this.button_actions(this.fa, [this.fast_zombie, 'fast', 'sprint', 3, [this.fast_max, this.fast_cur]], [8, 9])
         this.button_actions(this.sh, [this.sheild_zombie, 'sheild', 'hold', 2 , [this.sheild_max, this.sheild_cur]], [10, 11])
-        this.button_actions(this.bo, [this.bomb_zombie, 'bomb', 'boom', 1, [this.bomb_max, this.bomb_cur]], [0, 1])
+        this.button_actions(this.bo, [this.bomb_zombie, 'bomb', 'boom', 3, [this.bomb_max, this.bomb_cur]], [0, 1])
         this.button_actions(this.sp, [this.spit_zombie, 'spitter', 'spit', 7, [this.spit_max, this.spit_cur]], [6, 7])
         this.button_actions(this.ont, [this.one_tough_zombie, 'one_tough', 'stars', 1, [this.otz_max, this.otz_cur]], [12, 13])
         //particles, dont need just yet
