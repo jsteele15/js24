@@ -15,9 +15,10 @@ let loseText = null
 let level_num = 1
 let hero_speed = 2
 let base_speed = 1
+//max for zombies
 
 //state machine for inside the class, im thinking, Menu, Upgrade, Battle
-let state = 'Main_menu'
+let state = 'Tutorial'
 
 //attack for the zombies
 const attack_hero = function(hero, z_list){
@@ -43,101 +44,7 @@ const attack_hero = function(hero, z_list){
 
 //kills the zombies if it hits an object
 
-const zombie_hit_dis = function(col, zomb){
-    console.log(zomb.name)
-    if(zomb.name === 'base_zombie' || zomb.name === 'spitter'){
-        if(zomb.health >= 1){
-            zomb.health -= 50
-        } 
-        if(zomb.health <= 1) {
-            zomb.disableBody(true, true);
-            zombies_lost += 1
-        }
-        
-        col.disableBody(true, true);
-    }
-    if(zomb.name === 'ghost'){
-        const randomInt = Math.floor(Math.random() * 2) + 1
-        if(randomInt === 1){
-            if(zomb.health >= 1){
-            zomb.health -= 50
-        } 
-        if(zomb.health <= 1) {
-            zomb.disableBody(true, true);
-            zombies_lost += 1
-        }
-        
-        col.disableBody(true, true);
-        }
-    }
-    if(zomb.name === 'sheild'){
-        if(zomb.health >= 1){
-            zomb.health -= 50
-        } 
-        if(zomb.health <= 1) {
-            zomb.disableBody(true, true);
-            zombies_lost += 1
-        }
-        
-        col.disableBody(true, true);
-    }
-    if(zomb.name === 'bomb'){
-        if(zomb.health >= 1){
-            zomb.health -= 100
-        } 
-        if(zomb.health <= 1) {
-            zomb.disableBody(true, true);
-            zombies_lost += 1
-        }
-        
-        col.disableBody(true, true);
-    }
-        
-}
 
-const zombie_hit_static = function(col, zomb){
-    if(zomb.name === 'base_zombie' || zomb.name === 'spitter'){
-        if(zomb.health >= 1){
-            zomb.health -= 50
-        } 
-        if(zomb.health <= 1) {
-            zomb.disableBody(true, true);
-            zombies_lost += 1
-        }
-
-    }
-    if(zomb.name === 'ghost'){
-        const randomInt = Math.floor(Math.random() * 2) + 1
-        if(randomInt === 1){
-            if(zomb.health >= 1){
-            zomb.health -= 50
-        } 
-        if(zomb.health <= 1) {
-            zomb.disableBody(true, true);
-            zombies_lost += 1
-        }
-        }
-    }
-    if(zomb.name === 'sheild'){
-        if(zomb.health >= 1){
-            zomb.health -= 50
-        } 
-        if(zomb.health <= 1) {
-            zomb.disableBody(true, true);
-            zombies_lost += 1
-        }
-
-    }
-    if(zomb.name === 'bomb'){
-        if(zomb.health >= 1){
-            zomb.health -= 100
-        } 
-        if(zomb.health <= 1) {
-            zomb.disableBody(true, true);
-            zombies_lost += 1
-        }
-    }
-}
 
 const any_alive = function(zombie_list){
     for(let z = 0; z < zombie_list.length; z++){
@@ -276,6 +183,7 @@ export default class Game extends Phaser.Scene{
         this.hero_list = [this.hero_1, null, null, null, null, null, null, null, null]
         this.healthBar = null
         this.tiles = null
+        this.inside_ex = false
         
         this.title = null
         this.start = null
@@ -291,6 +199,25 @@ export default class Game extends Phaser.Scene{
         this.movement_eyes = 'right'
         this.stut = null
         this.ptut = null
+
+        this.base_max = 10
+        this.ghost_max = 5
+        this.fast_max = 5
+        this.sheild_max = 3
+        this.bomb_max = 3
+        this.spit_max = 3
+        this.xotz_max = 1
+
+        //current
+        this.base_cur =  0
+        this.ghost_cur = 0
+        this.fast_cur = 0
+        this.sheild_cur = 0
+        this.bomb_cur = 0
+        this.spit_cur = 0
+        this.otz_cur = 0
+        
+        
 
         this.main_menu_zombies = null
         this.base_zombie = null
@@ -316,6 +243,7 @@ export default class Game extends Phaser.Scene{
 
         //for buttons
         this.over_button = false
+        this.exclusion = null
         this.nz = null
         this.gh = null
         this.bo = null
@@ -361,6 +289,8 @@ export default class Game extends Phaser.Scene{
         
         //this.load.image('base_zombie', '../res/test.jpg')
         //for the heros
+        this.load.image('exc', './res/exclusion.png')
+
         this.load.spritesheet('little_girl', './res/Tutorial girl.png',{
             frameWidth: 64,
             frameHeight: 64
@@ -493,6 +423,10 @@ export default class Game extends Phaser.Scene{
         this.sw = this.physics.add.group()
         this.bu = this.physics.add.group()
         //heros
+
+        this.exclusion = this.physics.add.sprite(310, 100, 'exc')
+        
+        
         this.hero_1 = this.physics.add.sprite(350, -4000, 'hero_1')
 
         //main_ menu
@@ -535,7 +469,7 @@ export default class Game extends Phaser.Scene{
         this.one_tough_zombie = this.physics.add.group()
         
         this.zombie_list = [this.base_zombie, this.ghost_zombie, this.fast_zombie, this.sheild_zombie, this.bomb_zombie, this.spit_zombie, this.one_tough_zombie]
-        this.current_selected = [this.base_zombie, 'base_zombie', 'walk', 3]
+        this.current_selected = [this.base_zombie, 'base_zombie', 'walk', 3, [this.base_max, this.base_cur]]
         this.animation_list = ['walk', 'bounce', 'sprint', 'hold']
 
         //for buttons
@@ -554,19 +488,19 @@ export default class Game extends Phaser.Scene{
         this.sp.visible = false
         this.bo.visible = false
 
-        this.left_list = [this.gh, this.fa, this.sp]
+        this.left_list = [this.gh, this.sp, this.fa]
         this.right_list = [this.bo, this.sh, this.ont]
 
         this.button_list = [this.nz]
         //this.otz = this.add.sprite(400, 400, 'buttons',5)
-
-        this.button_actions(this.nz, [this.base_zombie, 'base_zombie', 'walk', 3],[2, 3])
-        this.button_actions(this.gh, [this.ghost_zombie, 'ghost', 'bounce', 4], [4, 5])
-        this.button_actions(this.fa, [this.fast_zombie, 'fast', 'sprint', 3], [8, 9])
-        this.button_actions(this.sh, [this.sheild_zombie, 'sheild', 'hold', 2], [10, 11])
-        this.button_actions(this.bo, [this.bomb_zombie, 'bomb', 'boom', 1], [0, 1])
-        this.button_actions(this.sp, [this.spit_zombie, 'spitter', 'spit', 1], [6, 7])
-        this.button_actions(this.ont, [this.one_tough_zombie, 'one_tough', 'stars', 1], [12, 13])
+        this.button_actions(this.exclusion, 1, 1)
+        this.button_actions(this.nz, [this.base_zombie, 'base_zombie', 'walk', 3, [this.base_max, this.base_cur]],[2, 3])
+        this.button_actions(this.gh, [this.ghost_zombie, 'ghost', 'bounce', 4, [this.ghost_max, this.ghost_cur]], [4, 5])
+        this.button_actions(this.fa, [this.fast_zombie, 'fast', 'sprint', 3, [this.fast_max, this.fast_cur]], [8, 9])
+        this.button_actions(this.sh, [this.sheild_zombie, 'sheild', 'hold', 2 , [this.sheild_max, this.sheild_cur]], [10, 11])
+        this.button_actions(this.bo, [this.bomb_zombie, 'bomb', 'boom', 1, [this.bomb_max, this.bomb_cur]], [0, 1])
+        this.button_actions(this.sp, [this.spit_zombie, 'spitter', 'spit', 1, [this.spit_max, this.spit_cur]], [6, 7])
+        this.button_actions(this.ont, [this.one_tough_zombie, 'one_tough', 'stars', 1, [this.otz_max, this.otz_cur]], [12, 13])
         //particles, dont need just yet
         //let particles = this.add.particles('parts')
         //let particles = this.add.particles('parts')
@@ -591,17 +525,17 @@ export default class Game extends Phaser.Scene{
         this.hero_1.inputEnabled = false
         //collisions for the different kinds of zombies
         for(let i = 0; i < this.zombie_list.length; i ++){
-            this.physics.add.collider(this.bl, this.zombie_list[i], zombie_hit_dis, null, this);
+            this.physics.add.collider(this.bl, this.zombie_list[i], this.zombie_hit_dis, null, this);
         }
         
         for(let i = 0; i < this.zombie_list.length; i ++){
-            this.physics.add.collider(this.di, this.zombie_list[i], zombie_hit_dis, null, this);
+            this.physics.add.collider(this.di, this.zombie_list[i],  this.zombie_hit_dis, null, this);
         }
         for(let i = 0; i < this.zombie_list.length; i ++){
-            this.physics.add.collider(this.sw, this.zombie_list[i], zombie_hit_static, null, this);
+            this.physics.add.collider(this.sw, this.zombie_list[i],  this.zombie_hit_static, null, this);
         }
         for(let i = 0; i < this.zombie_list.length; i ++){
-            this.physics.add.collider(this.bu, this.zombie_list[i], zombie_hit_static, null, this);
+            this.physics.add.collider(this.bu, this.zombie_list[i], this.zombie_hit_static, null, this);
         }
         
         //this.physics.add.collider(this.bl, this.ghost_zombie, zombie_hit, null, this);
@@ -672,6 +606,8 @@ export default class Game extends Phaser.Scene{
                 this.hero_1.destroy()
                 this.hero_1 = this.physics.add.sprite(310, 350, 'little_girl')
                 this.hero_1.setScale(1.5)
+                this.exclusion.x = this.hero_1.x
+                this.exclusion.y = this.hero_1.y
                 this.hero_1.play('bobbing') 
                 this.upB.visible = false
                 this.text_scroll.destroy()
@@ -719,7 +655,8 @@ export default class Game extends Phaser.Scene{
                     timerText.visible = true
                     this.stut.destroy()
                     this.ptut.destroy()
-                    this.current_selected = [this.base_zombie, 'base_zombie', 'walk', 3]
+                    this.current_selected[4][1] = 0
+                    this.current_selected = [this.base_zombie, 'base_zombie', 'walk', 3, [this.base_max, this.base_cur]]
                     this.hero_1.destroy()
                     this.hero_1 = this.physics.add.sprite(50, 50, 'hero_bomb')
                     this.hero_1.play('throwing')
@@ -780,6 +717,8 @@ export default class Game extends Phaser.Scene{
             }
             this.move_skull("up")
             
+            this.exclusion.x = this.hero_1.x
+            this.exclusion.y = this.hero_1.y
 
             if(this.alive === true){
                 followPath(this.hero_1, saved_movement_ind, path, hero_speed, pat)
@@ -842,6 +781,8 @@ export default class Game extends Phaser.Scene{
             if(this.up_fired === false){
                 timeSeconds = 100
                 if(level_num >= 4){
+                    
+
                     this.upB = this.physics.add.sprite(300, 200, 'upBack')
                     this.upB.visible = true
                     upgradeText = this.add.text(200, 200, 'testing', {
@@ -857,7 +798,13 @@ export default class Game extends Phaser.Scene{
                 if(level_num < 4){
                     this.upB = this.physics.add.sprite(300, 200, 'upBack')
                     this.upB.visible = true
-
+                    this.base_cur =  0
+                    this.ghost_cur = 0
+                    this.fast_cur = 0
+                    this.sheild_cur = 0
+                    this.bomb_cur = 0
+                    this.spit_cur = 0
+                    this.otz_cur = 0
                     for(let i = 0; i < this.button_list.length; i++){
                         this.button_list[i].visible = false
                         
@@ -911,7 +858,127 @@ export default class Game extends Phaser.Scene{
             }
         }
     }
+    zombie_hit_dis(col, zomb){
+        console.log(zomb.name)
+        if(zomb.name === 'base_zombie' || zomb.name === 'spitter' || zomb.name === 'fast'){
+            if(zomb.health >= 1){
+                zomb.health -= 50
+            } 
+            if(zomb.health <= 1) {
+                zomb.disableBody(true, true);
+                
+                zombies_lost += 1
+                if(zomb.name === 'base_zombie'){
+                    this.base_cur -= 1
+                }
+                if(zomb.name === 'spitter'){
+                    this.spit_cur -= 1
+                }
+                if(zomb.name === 'fast'){
+                    this.fast_cur -= 1
+                }
+            }
+            
+            col.disableBody(true, true);
+        }
+        if(zomb.name === 'ghost'){
+            const randomInt = Math.floor(Math.random() * 2) + 1
+            if(randomInt === 1){
+                if(zomb.health >= 1){
+                zomb.health -= 50
+            } 
+            if(zomb.health <= 1) {
+                zomb.disableBody(true, true);
+                zombies_lost += 1
+                this.ghost_cur -= 1
+            }
+            
+            col.disableBody(true, true);
+            }
+        }
+        if(zomb.name === 'sheild'){
+            if(zomb.health >= 1){
+                zomb.health -= 50
+            } 
+            if(zomb.health <= 1) {
+                zomb.disableBody(true, true);
+                zombies_lost += 1
+                this.sheild_cur -= 1
+            }
+            
+            col.disableBody(true, true);
+        }
+        if(zomb.name === 'bomb'){
+            if(zomb.health >= 1){
+                zomb.health -= 100
+            } 
+            if(zomb.health <= 1) {
+                zomb.disableBody(true, true);
+                zombies_lost += 1
+                this.bomb_cur -= 1
+            }
+            
+            col.disableBody(true, true);
+        }
+            
+    }
 
+    zombie_hit_static(col, zomb){
+        if(zomb.name === 'base_zombie' || zomb.name === 'spitter' || zomb.name === 'fast'){
+            if(zomb.health >= 1){
+                zomb.health -= 50
+            } 
+            if(zomb.health <= 1) {
+                zomb.disableBody(true, true);
+
+                zombies_lost += 1
+                if(zomb.name === 'base_zombie'){
+                    this.base_cur -= 1
+                }
+                if(zomb.name === 'spitter'){
+                    this.spit_cur -= 1
+                }
+                if(zomb.name === 'fast'){
+                    this.fast_cur -= 1
+                }
+            }
+
+        }
+        if(zomb.name === 'ghost'){
+            const randomInt = Math.floor(Math.random() * 2) + 1
+            if(randomInt === 1){
+                if(zomb.health >= 1){
+                zomb.health -= 50
+            } 
+            if(zomb.health <= 1) {
+                zomb.disableBody(true, true);
+                zombies_lost += 1
+                this.ghost_cur -= 1
+            }
+            }
+        }
+        if(zomb.name === 'sheild'){
+            if(zomb.health >= 1){
+                zomb.health -= 50
+            } 
+            if(zomb.health <= 1) {
+                zomb.disableBody(true, true);
+                zombies_lost += 1
+                this.sheild_cur -= 1
+            }
+
+        }
+        if(zomb.name === 'bomb'){
+            if(zomb.health >= 1){
+                zomb.health -= 100
+            } 
+            if(zomb.health <= 1) {
+                zomb.disableBody(true, true);
+                zombies_lost += 1
+                this.bomb_cur -= 1
+            }
+        }
+    }
     //this is needed to work out where the zombies have to go
     zombie_run(target, zombies, speed){
         
@@ -927,17 +994,80 @@ export default class Game extends Phaser.Scene{
     handleLeftClick(pointer) {
         if(this.over_button === false){
             if(state === 'Battle' || state === 'Tutorial'){
-                if (pointer.leftButtonDown()) {
-                    
-                    //this.create_h(this.base_zombie, 'base_zombie', 0.1, 1, pointer.x, pointer.y, 'be_cool')
-                    this.create_h(this.current_selected[0], this.current_selected[1], 1, this.current_selected[3], pointer.x, pointer.y, this.current_selected[2])
-                    //this.create_h(this.ghost_zombie, 'ghost', 1, 1, pointer.x, pointer.y, 'bounce')
-                    for(let i = 0; i < this.zombie_list.length; i++){
-                        this.zombie_list[i].children.iterate(sprite => {
-                            sprite.play(this.animation_list[i])
-                        })
-                    }
-                }}
+                if(this.inside_ex === false){    
+                    if (pointer.leftButtonDown()) {
+                        if(this.current_selected[1] === 'base_zombie'){
+                            
+                            this.current_selected[4][1] = this.base_cur
+                        }
+                        if(this.current_selected[1] === 'ghost'){
+                            
+                            this.current_selected[4][1] = this.ghost_cur
+                        }
+                        if(this.current_selected[1] === 'fast'){
+                            
+                            this.current_selected[4][1] = this.fast_cur
+                        }
+                        if(this.current_selected[1] === 'sheild'){
+                            
+                            this.current_selected[4][1] = this.sheild_cur
+                        }
+                        if(this.current_selected[1] === 'bomb'){
+                           
+                            this.current_selected[4][1] = this.bomb_cur
+                        }
+                        if(this.current_selected[1] === 'spitter'){
+                           
+                            this.current_selected[4][1] = this.spit_cur
+                        }
+                        if(this.current_selected[1] === 'one_tough'){
+                            
+                            this.current_selected[4][1] = this.otz_cur
+                        }
+                        
+                        if(this.current_selected[4][0] > this.current_selected[4][1]){
+                             //this.create_h(this.base_zombie, 'base_zombie', 0.1, 1, pointer.x, pointer.y, 'be_cool')
+                            this.create_h(this.current_selected[0], this.current_selected[1], 1, this.current_selected[3], pointer.x, pointer.y, this.current_selected[2])
+                            
+                            console.log(this.current_selected[4][0], ' ', this.current_selected[4][1])
+                            
+                            if(this.current_selected[1] === 'base_zombie'){
+                                this.base_cur += 1
+                                this.current_selected[4][1] = this.base_cur
+                            }
+                            if(this.current_selected[1] === 'ghost'){
+                                this.ghost_cur += 1
+                                this.current_selected[4][1] = this.ghost_cur
+                            }
+                            if(this.current_selected[1] === 'fast'){
+                                this.fast_cur += 1
+                                this.current_selected[4][1] = this.fast_cur
+                            }
+                            if(this.current_selected[1] === 'sheild'){
+                                this.sheild_cur += 1
+                                this.current_selected[4][1] = this.sheild_cur
+                            }
+                            if(this.current_selected[1] === 'bomb'){
+                                this.bomb_cur += 1
+                                this.current_selected[4][1] = this.bomb_cur
+                            }
+                            if(this.current_selected[1] === 'spitter'){
+                                this.spit_cur += 1
+                                this.current_selected[4][1] = this.spit_cur
+                            }
+                            if(this.current_selected[1] === 'one_tough'){
+                                this.otz_cur += 1
+                                this.current_selected[4][1] = this.otz_cur
+                            }
+                            
+                            //this.create_h(this.ghost_zombie, 'ghost', 1, 1, pointer.x, pointer.y, 'bounce')
+                            for(let i = 0; i < this.zombie_list.length; i++){
+                                this.zombie_list[i].children.iterate(sprite => {
+                                    sprite.play(this.animation_list[i])
+                                })
+                            }}
+                    }}
+            }
     }}
     add_collision(z_list, hero){
         for(let i = 0; i < z_list.length; i++)
@@ -1045,7 +1175,9 @@ export default class Game extends Phaser.Scene{
                 }
             }
             if(state === 'Battle' || state === 'Tutorial'){
-                this.current_selected = s_list
+                if(s_list != 1){
+                    this.current_selected = s_list
+                }
             }    
             if(state  === 'Upgrade'){
                 this.button_list.push(button)
@@ -1056,15 +1188,22 @@ export default class Game extends Phaser.Scene{
 
         button.on('pointerover', ()=> {
             if(state === 'Battle' || state === 'Tutorial'){
-                this.over_button = true
-                button.setFrame(f_list[1])
+                if(s_list === 1){
+                    this.inside_ex = true}
+                else{
+                    this.over_button = true
+                    button.setFrame(f_list[0])}
             }
         })
 
         button.on('pointerout', ()=>{
             if(state === "Battle" || state === 'Tutorial'){
-                this.over_button = false
-                button.setFrame(f_list[0])}
+                if(s_list === 1){
+                    this.inside_ex = false}
+                else{
+                    this.over_button = false
+                    button.setFrame(f_list[0])}}
+                
         })
     }
 
