@@ -24,10 +24,10 @@ let state = 'Main_menu'
 
 //attack for the zombies
 const attack_hero = function(hero, z_list){
-    this.bite.play()
+    
     if(cur_h_health > 0){
         if(z_list.name === "bomb"){
-            cur_h_health -= 100
+            cur_h_health -= 50
             z_list.health -= 100
         } 
         if(z_list.name === "fast"){
@@ -40,9 +40,27 @@ const attack_hero = function(hero, z_list){
             cur_h_health -= 2
         }
     } else {
+        this.bite.play()
         this.alive = false
         hero.disableBody(true, true)
     }
+    if(hero.x <= z_list.x && hero.y <= z_list.y){
+        z_list.x += 30
+        z_list.y += 30
+    }
+    if(hero.x > z_list.x && hero.y <= z_list.y){
+        z_list.x -= 30
+        z_list.y += 30
+    }
+    if(hero.x <= z_list.x && hero.y > z_list.y){
+        z_list.x += 30
+        z_list.y -= 30
+    }
+    if(hero.x > z_list.x && hero.y > z_list.y){
+        z_list.x -= 30
+        z_list.y -= 30
+    }
+    
 }
 
 //kills the zombies if it hits an object
@@ -274,6 +292,7 @@ export default class Game extends Phaser.Scene{
 
         //for timers
         this.timer = null
+        this.emitter_timer = null
         //current selected will include the curent zombie, and then the 'string name' then animation name
         this.current_selected = [this.ghost_zombie, 'ghost', 'bounce']
     }
@@ -287,6 +306,10 @@ export default class Game extends Phaser.Scene{
         this.load.audio('click', './res/click.mp3')
         //win text
         this.load.image('win_text', './res/win_text.png')
+
+        //particles
+        this.load.image('parts', './res/parts.png')
+
         //tool tipes
         this.load.image('choose_upgrade', './res/cau.png')
         this.load.image('ghost_tool', './res/ghost_tool.png')
@@ -497,6 +520,13 @@ export default class Game extends Phaser.Scene{
                 this.main_menu_zombies.create(35*i, 800+(30*c), list_zombies[randomInt])
             }
         }
+        this.emitter = this.add.particles(199, 300, 'parts', {
+            //angle: {min: -30, max: 30},
+            scale: { start:1 , end: 0},
+            speed:50
+        });
+        this.emitter.stop()
+
         this.start = this.physics.add.sprite(320, -20, 'start_but')
         this.title = this.physics.add.sprite(320, -200, 'title_card')
         
@@ -562,17 +592,17 @@ export default class Game extends Phaser.Scene{
         this.button_actions(this.ont, [this.one_tough_zombie, 'one_tough', 'stars', 1, [this.otz_max, this.otz_cur]], [12, 13])
         //particles, dont need just yet
         //let particles = this.add.particles('parts')
-        //let particles = this.add.particles('parts')
+        let particles = this.add.particles('parts')
         
         //this is for creating particle, it cannot be used to directly interact with game objects, but i could use them to make the game more juicy
-        //this.emitter = this.add.particles(199, 300, 'parts', {
-            //angle: {min: -30, max: 30},
-            //speed:150
-        //});
-
-        //this.emitter.setPosition(100, 100);
-        //this.emitter.setFrequency(1000, 200);
         
+        /*
+        this.emitter.setPosition(100, 100);
+        
+        this.emitter.setFrequency(1)*/
+        //this.emitter.start()
+        //this.emitter.explode(1000, 100, 100)
+        //this.emitter.active = false;
         
         //this.create_h(this.base_zombie, 'base_zombie', 0.1, 1, 150, 400, 'be_cool')
         //create_h(hero_1, 'hero_1', 1, 1)
@@ -622,6 +652,14 @@ export default class Game extends Phaser.Scene{
         const myClock = this.time.addEvent({
             delay: 1000, 
             callback: this.updateClock,
+            callbackScope: this,
+            loop: true, // Repeat indefinitely
+        });
+        this.healthBar = this.makeBar(this.hero_1.x, this.hero_1.y, 0x2ecc71);
+
+        this.emitter_timer = this.time.addEvent({
+            delay: 1000, 
+            callback: this.updateEmitter,
             callbackScope: this,
             loop: true, // Repeat indefinitely
         });
@@ -967,10 +1005,12 @@ export default class Game extends Phaser.Scene{
         if(zomb.name === 'base_zombie' || zomb.name === 'spitter' || zomb.name === 'fast'){
             if(zomb.health >= 1){
                 zomb.health -= 50
+                
             } 
             if(zomb.health <= 1) {
                 zomb.disableBody(true, true);
-                
+                this.emitter.start()
+                this.emitter.setPosition(zomb.x, zomb.y)
                 zombies_lost += 1
                 if(zomb.name === 'base_zombie'){
                     this.base_cur -= 1
@@ -1034,7 +1074,8 @@ export default class Game extends Phaser.Scene{
             } 
             if(zomb.health <= 1) {
                 zomb.disableBody(true, true);
-
+                this.emitter.start()
+                this.emitter.setPosition(zomb.x, zomb.y)
                 zombies_lost += 1
                 if(zomb.name === 'base_zombie'){
                     this.base_cur -= 1
@@ -1241,6 +1282,7 @@ export default class Game extends Phaser.Scene{
         bar.scaleX = percentage / 100;
         bar.x = char.x - 30
         bar.y = char.y - 50
+
     }
 
     //after defeating a hero, get  choice of an upgrade
@@ -1323,7 +1365,9 @@ export default class Game extends Phaser.Scene{
             this.button_list[i].y = 550
         }
     }
-
+    updateEmitter(){
+        this.emitter.stop()
+    }
     move_skull(dir){
         if(dir === "up"){
             this.upB.visible = false
