@@ -24,6 +24,7 @@ let state = 'Main_menu'
 
 //attack for the zombies
 const attack_hero = function(hero, z_list){
+    this.bite.play()
     if(cur_h_health > 0){
         if(z_list.name === "bomb"){
             cur_h_health -= 100
@@ -266,6 +267,11 @@ export default class Game extends Phaser.Scene{
 
         this.win_text = null
 
+        //for sounds
+        this.spawn = null
+        this.bite = null
+        this.click = null
+
         //for timers
         this.timer = null
         //current selected will include the curent zombie, and then the 'string name' then animation name
@@ -273,7 +279,13 @@ export default class Game extends Phaser.Scene{
     }
 
     preload()
-    {   //win text
+    {   
+        //for audio 
+        this.load.audio('background_track', './res/track.mp3')
+        this.load.audio('spawn', './res/spawn.mp3')
+        this.load.audio('bite', './res/bite.mp3')
+        this.load.audio('click', './res/click.mp3')
+        //win text
         this.load.image('win_text', './res/win_text.png')
         //tool tipes
         this.load.image('choose_upgrade', './res/cau.png')
@@ -395,6 +407,14 @@ export default class Game extends Phaser.Scene{
 
     create()
     {   
+        const backgroundMusic = this.sound.add('background_track', { volume: 0.5 });
+        backgroundMusic.loop = true;
+        backgroundMusic.play();
+
+        this.spawn = this.sound.add('spawn')
+        this.bite = this.sound.add('bite')
+        this.click = this.sound.add('click')
+
         this.anims.create({
                 key: 'bobbing',
                 frames: this.anims.generateFrameNumbers('little_girl', { start: 0, end: 1 }),
@@ -684,6 +704,8 @@ export default class Game extends Phaser.Scene{
                 
                 if(level_num === 1){
                     this.exclusion.visible = true
+                    this.base_cur =  0
+                    this.building.destroy()
                     this.building = this.physics.add.sprite(320, 320, 'build')
                     for(let z = 0; z < this.zombie_list.length; z++){
                         for(let i = 0; i < this.zombie_list[z].children.entries.length; i++){
@@ -1108,6 +1130,7 @@ export default class Game extends Phaser.Scene{
                         }
                         
                         if(this.current_selected[4][0] > this.current_selected[4][1]){
+                            this.spawn.play()
                              //this.create_h(this.base_zombie, 'base_zombie', 0.1, 1, pointer.x, pointer.y, 'be_cool')
                             this.create_h(this.current_selected[0], this.current_selected[1], 1, this.current_selected[3], pointer.x, pointer.y, this.current_selected[2])
                             
@@ -1241,6 +1264,7 @@ export default class Game extends Phaser.Scene{
     button_actions(button, s_list, f_list){
         button.setInteractive()
         button.on('pointerdown', ()=> {
+            this.click.play()
             if(state === 'Main_menu'){
                 state = 'Cutscene'
             }
