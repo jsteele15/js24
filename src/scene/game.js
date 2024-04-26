@@ -27,8 +27,11 @@ const attack_hero = function(hero, z_list){
     
     if(cur_h_health > 0){
         if(z_list.name === "bomb"){
-            cur_h_health -= 5
-            z_list.health -= 101
+            cur_h_health -= 10
+            z_list.health = 0
+            z_list.disableBody(true, true)
+            this.bomb_cur -= 1
+            this.expl.play()
         } 
         if(z_list.name === "fast"){
             cur_h_health -= 0.5
@@ -296,7 +299,7 @@ export default class Game extends Phaser.Scene{
         this.spawn = null
         this.bite = null
         this.click = null
-
+        this.expl = null
         //for timers
         this.timer = null
         this.emitter_timer = null
@@ -311,6 +314,7 @@ export default class Game extends Phaser.Scene{
         this.load.audio('spawn', './res/spawn.mp3')
         this.load.audio('bite', './res/bite.mp3')
         this.load.audio('click', './res/click.mp3')
+        this.load.audio('exp', './res/explosion.mp3')
         //win text
         this.load.image('win_text', './res/win_text.png')
 
@@ -442,13 +446,14 @@ export default class Game extends Phaser.Scene{
 
     create()
     {   
-        const backgroundMusic = this.sound.add('background_track', { volume: 0.5 });
-        backgroundMusic.loop = true;
-        backgroundMusic.play();
+        const backgroundMusic = this.sound.add('background_track', { volume: 0.5 })
+        backgroundMusic.loop = true
+        backgroundMusic.play()
 
         this.spawn = this.sound.add('spawn')
         this.bite = this.sound.add('bite')
         this.click = this.sound.add('click')
+        this.expl = this.sound.add('exp')
 
         this.anims.create({
                 key: 'bobbing',
@@ -482,15 +487,7 @@ export default class Game extends Phaser.Scene{
         });
         //tiles
         this.tiles = this.physics.add.sprite(320, 320 ,'tile1' )
-        /*
-        let tile_list = ['tile1', 'tile2', 'tile3', 'tile4', 'tile5']
-        for(let r = 0; r < 15; r++){
-            for(let c = 0; c < 15; c++){
-                const randomInt = Math.floor(Math.random() * 4)
-                let tile1 = this.tiles.create(64*r, 64*c, tile_list[randomInt])
-                //tile1.setScale(10)
-            }
-        }*/
+        
         
         this.upB = this.physics.add.sprite(300, 300, 'upBack')
         this.win_text = this.physics.add.sprite(450, 100, 'win_text')
@@ -526,7 +523,7 @@ export default class Game extends Phaser.Scene{
 
         this.exclusion = this.physics.add.sprite(310, 100, 'exc')
         this.exclusion.visible = false
-        this.exclusion.setScale(2)
+        this.exclusion.setScale(1)
         
         this.hero_1 = this.physics.add.sprite(350, -4000, 'hero_1')
 
@@ -751,6 +748,7 @@ export default class Game extends Phaser.Scene{
             if(this.bat_fired === false){
                 
                 if(level_num === 1){
+                    this.exclusion.setScale(2)
                     timeSeconds = 100
                     this.exclusion.visible = true
                     this.base_cur =  0
@@ -1129,14 +1127,16 @@ export default class Game extends Phaser.Scene{
             col.disableBody(true, true);
         }
         if(zomb.name === 'bomb'){
-            if(zomb.health >= 1){
-                zomb.health -= 101
+            /*if(zomb.health >= 1){
+                zomb.health -= 100
             } 
-            if(zomb.health <= 1) {
-                zomb.disableBody(true, true);
-                zombies_lost += 1
-                this.bomb_cur -= 1
-            }
+            if(zomb.health <= 1) {*/
+            zomb.health = 0
+            zomb.disableBody(true, true);
+            zombies_lost += 1
+            this.bomb_cur -= 1
+            this.expl.play()
+            //}
             
             col.disableBody(true, true);
         }
@@ -1190,14 +1190,16 @@ export default class Game extends Phaser.Scene{
 
         }
         if(zomb.name === 'bomb'){
-            if(zomb.health >= 1){
+            /*if(zomb.health >= 1){
                 zomb.health -= 100
             } 
-            if(zomb.health <= 1) {
-                zomb.disableBody(true, true);
-                zombies_lost += 1
-                this.bomb_cur -= 1
-            }
+            if(zomb.health <= 1) {*/
+            zomb.health = 0
+            zomb.disableBody(true, true);
+            zombies_lost += 1
+            this.bomb_cur -= 1
+            this.expl.play()
+            //}
         }
     }
     //this is needed to work out where the zombies have to go
